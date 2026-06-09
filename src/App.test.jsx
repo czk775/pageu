@@ -3,6 +3,44 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
 import App from './App';
+import { generateSiteDraft } from './lib/draftGenerator';
+import { createAnalysisResult } from './types/analysisResult';
+import { createInitialDraft } from './types/createDraft';
+
+describe('siteDraft generation', () => {
+  it('derives a siteDraft from createDraft and analysisResult', () => {
+    const createDraft = createInitialDraft();
+    createDraft.basicInfo.name = '林小雨';
+    createDraft.basicInfo.major = '数字媒体技术';
+    createDraft.jobInfo.jd = '前端实习生，负责 React 页面开发和用户体验优化。';
+    createDraft.experiences = [
+      {
+        id: 'experience-campus',
+        title: '校园招聘小程序',
+        description: '负责前端页面和报名流程。',
+        collapsed: false,
+      },
+    ];
+    createDraft.template = 'flow';
+
+    const analysisResult = createAnalysisResult(createDraft);
+    const siteDraft = generateSiteDraft(createDraft, analysisResult);
+
+    expect(siteDraft.template).toBe('flow');
+    expect(siteDraft.profile.name).toBe('林小雨');
+    expect(siteDraft.profile.targetRole).toBe('前端实习生');
+    expect(siteDraft.sections.map((section) => section.type)).toEqual([
+      'avatar',
+      'intro',
+      'experience',
+      'project',
+      'skills',
+      'works',
+      'contact',
+    ]);
+    expect(siteDraft.sections.find((section) => section.type === 'experience').items[0].title).toBe('校园招聘小程序');
+  });
+});
 
 describe('PageU app shell', () => {
   it('renders the landing page with the required core content', () => {
@@ -35,7 +73,6 @@ describe('PageU app shell', () => {
   });
 
   it.each([
-    ['/editor', '编辑页', '再调整一下，让它更像你'],
     ['/publish', '发布页', '你的个人网站准备好了'],
     ['/site/demo', '个人网站页', '这里是生成后的个人网站'],
   ])('renders the placeholder route %s', (path, title, hint) => {
@@ -153,7 +190,7 @@ describe('PageU app shell', () => {
 
     await user.click(screen.getByRole('button', { name: '确认生成' }));
 
-    expect(screen.getByRole('heading', { name: '编辑页' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: '再调整一下，让它更像你' })).toBeInTheDocument();
   });
 
   it('opens adjustment input and simulates reanalysis', async () => {
@@ -174,5 +211,55 @@ describe('PageU app shell', () => {
     await user.click(screen.getByRole('button', { name: '重新分析' }));
 
     expect(screen.getByText('已根据你的补充重新整理理解')).toBeInTheDocument();
+  });
+
+  it('renders the editor with modules, preview and editing panel', () => {
+    render(
+      <MemoryRouter initialEntries={['/editor']}>
+        <App />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole('heading', { level: 1, name: '再调整一下，让它更像你' })).toBeInTheDocument();
+    expect(screen.getByRole('complementary', { name: '模块区' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: '实时预览' })).toBeInTheDocument();
+    expect(screen.getByRole('complementary', { name: '编辑区' })).toBeInTheDocument();
+    expect(screen.getByText('已经很不错了，再调整一下吧')).toBeInTheDocument();
+
+    for (const moduleName of ['头像', '个人介绍', '经历', '项目', '技能', '作品', '联系方式']) {
+      expect(screen.getByRole('button', { name: `选择${moduleName}` })).toBeInTheDocument();
+    }
+  });
+
+  it('updates the live preview from the edit panel and autosaves', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={['/editor']}>
+        <App />
+      </MemoryRouter>,
+    );
+
+    await user.clear(screen.getByLabelText('标题'));
+    await user.type(screen.getByLabelText('标题'), '我的个人主页');
+
+    expect(screen.getByText('我的个人主页')).toBeInTheDocument();
+    expect(screen.getByText('正在保存')).toBeInTheDocument();
+    expect(await screen.findByText('已保存')).toBeInTheDocument();
+    expect(JSON.parse(localStorage.getItem('pageu.siteDraft')).profile.headline).toBe('我的个人主页');
+  });
+
+  it('routes editor publish action to publish page', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={['/editor']}>
+        <App />
+      </MemoryRouter>,
+    );
+
+    await user.click(screen.getByRole('button', { name: '发布网站' }));
+
+    expect(screen.getByRole('heading', { name: '发布页' })).toBeInTheDocument();
   });
 });

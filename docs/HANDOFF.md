@@ -2,27 +2,23 @@
 
 ## 1. 当前阶段名称
 
-Phase 3 — AI 分析页（Analyze Page / Mock AI）。
+Phase 4 — 编辑器（Editor / Site Draft）。
 
 ## 2. 本阶段完成内容
 
-- 初始化 PageU 前端项目骨架。
-- 完成首页核心内容：`PageU`、`生成你的个人网站`、`立即创建`。
-- 完成柔和未来感动态背景。
-- 完成左下角悬浮的小U 光团助手，包含轻微漂浮动画与极短提示。
-- 建立基础路由：`/`、`/create`、`/analyze`、`/editor`、`/publish`、`/site/:id`。
-- 首页按钮点击后跳转到 `/create`。
-- 完成各占位页的页面名称与一句提示。
-- 增加基础自动化测试，覆盖首页核心内容、CTA 跳转和占位路由。
-- 完成 `/create` 单页滚动创建页。
-- 完成基础信息、求职信息、经历卡片、模板选择和底部生成按钮。
-- 建立 `createDraft` 前端状态，并通过 Context 统一维护。
-- 创建 `src/types/` 数据结构定义和 `src/data/templates.js` 模板数据。
-- 点击 `生成我的个人网站` 后跳转到 `/analyze`，暂不接入真实 AI。
-- 完成 `/analyze` Mock AI 分析页。
-- 基于 `createDraft` 派生岗位关键词、能力重点、推荐展示顺序、推荐强调经历。
-- 完成分析页调整区：`哪里需要调整`、补充输入、`重新分析` 和轻提示。
-- 点击 `确认生成` 后跳转 `/editor`，暂不实现真实编辑器。
+- 初始化 PageU 前端项目骨架、首页、动态背景、小U 光团助手和基础路由。
+- 完成 `/create` 单页滚动创建页，支持基础信息、求职信息、经历卡片和模板选择。
+- 建立 `createDraft` 前端状态，通过 Context 统一维护并同步到 `localStorage`。
+- 完成 `/analyze` Mock AI 分析页，基于 `createDraft` 派生岗位关键词、能力重点、推荐展示顺序和推荐强调经历。
+- 完成 `/editor` 网站草稿编辑器页面。
+- 编辑器采用三栏布局：左侧模块区、中间实时预览、右侧编辑区。
+- 左侧模块支持模拟排序、隐藏/显示、展开/折叠。
+- 中间预览支持电脑/手机切换，点击预览模块可高亮并切换右侧编辑对象。
+- 右侧编辑面板支持标题、文字、颜色、背景、模块显示的实时更新。
+- 新增 `siteDraft` 数据结构，并从 `createDraft` + `analysisResult` 派生初始网站草稿。
+- 新增自动保存，保存到 `localStorage` 的 `pageu.siteDraft`，并显示 `正在保存` / `已保存`。
+- 顶部操作支持 `返回分析`、`重新生成`、`发布网站`，发布按钮暂跳转 `/publish`。
+- 补充自动化测试，覆盖编辑器渲染、`siteDraft` 生成、发布跳转和自动保存提示。
 
 ## 3. 技术栈
 
@@ -41,15 +37,18 @@ Phase 3 — AI 分析页（Analyze Page / Mock AI）。
 ├── docs/
 │   └── HANDOFF.md
 ├── src/
-│   ├── test/
-│   │   └── setup.js
 │   ├── data/
 │   │   └── templates.js
+│   ├── lib/
+│   │   └── draftGenerator.js
 │   ├── state/
 │   │   └── CreateDraftContext.jsx
+│   ├── test/
+│   │   └── setup.js
 │   ├── types/
+│   │   ├── analysisResult.js
 │   │   ├── createDraft.js
-│   │   └── analysisResult.js
+│   │   └── siteDraft.js
 │   ├── App.jsx
 │   ├── App.test.jsx
 │   ├── main.jsx
@@ -57,33 +56,18 @@ Phase 3 — AI 分析页（Analyze Page / Mock AI）。
 ├── .gitignore
 ├── index.html
 ├── package.json
+├── package-lock.json
 └── vite.config.js
 ```
 
 ## 5. 修改/新增文件列表
 
-- 新增 `.gitignore`
-- 新增 `package.json`
-- 新增 `index.html`
-- 新增 `vite.config.js`
-- 新增 `src/main.jsx`
-- 新增 `src/App.jsx`
-- 新增 `src/styles.css`
-- 新增 `src/App.test.jsx`
-- 新增 `src/test/setup.js`
-- 新增 `src/types/createDraft.js`
-- 新增 `src/types/analysisResult.js`
-- 新增 `src/data/templates.js`
-- 新增 `src/state/CreateDraftContext.jsx`
-- 新增 `docs/HANDOFF.md`
-
-## 5.1 Phase 3 新增/修改文件
-
-- 新增 `src/types/analysisResult.js`
 - 修改 `src/App.jsx`
 - 修改 `src/App.test.jsx`
 - 修改 `src/styles.css`
 - 修改 `docs/HANDOFF.md`
+- 新增 `src/lib/draftGenerator.js`
+- 新增 `src/types/siteDraft.js`
 
 ## 6. 如何本地运行
 
@@ -94,31 +78,39 @@ npm run dev
 
 默认访问 Vite 输出的本地地址，通常是 `http://localhost:5173/`。
 
+验证命令：
+
+```bash
+npm test
+npm run build
+```
+
 ## 7. 如何验收本阶段
 
 1. 执行 `npm install` 安装依赖。
 2. 执行 `npm run dev` 启动项目。
-3. 打开首页，确认显示 `PageU`、`生成你的个人网站`、`立即创建`。
-4. 确认首页有动态科技感背景。
-5. 确认左下角显示小U 光团助手，并有轻微漂浮动画。
-6. 点击 `立即创建`，确认跳转到 `/create`。
-7. 分别访问 `/analyze`、`/editor`、`/publish`、`/site/demo`，确认占位页正常显示。
-8. 访问 `/create`，确认四个信息区块完整显示。
-9. 在创建页新增经历，确认出现 `经历2`、可折叠、可编辑、可删除。
-10. 选择任一模板，确认单选状态切换。
-11. 填写岗位 JD 后点击 `生成我的个人网站`，确认跳转到 `/analyze`。
-12. 在 `/analyze` 确认标题为 `这是我对你的理解`。
-13. 确认显示 4 张分析卡片：岗位关键词、能力重点、推荐展示顺序、推荐强调经历。
-14. 点击 `哪里需要调整`，确认出现补充输入框和 `重新分析` 按钮。
-15. 输入补充说明并点击 `重新分析`，确认出现 `已根据你的补充重新整理理解`。
-16. 点击 `返回修改`，确认回到 `/create`。
-17. 点击 `确认生成`，确认跳转 `/editor`。
-18. 可执行 `npm run build` 验证生产构建。
-19. 可执行 `npm test` 验证基础路由、创建页交互和分析页交互。
+3. 访问 `/editor`，确认页面标题为 `再调整一下，让它更像你`。
+4. 确认左下角小U 光团助手存在，提示为 `已经很不错了，再调整一下吧`。
+5. 确认页面为三栏结构：模块区、实时预览、编辑区。
+6. 在左侧模块区点击模块，确认中间对应区域高亮，右侧显示当前编辑项。
+7. 点击模块隐藏/显示，确认预览对应模块同步隐藏或恢复。
+8. 点击上移/下移，确认模块顺序和预览顺序同步变化。
+9. 在右侧修改 `标题`，确认中间预览标题实时更新。
+10. 在右侧修改 `颜色` 和 `背景`，确认预览主题实时更新。
+11. 切换 `电脑` / `手机`，确认预览宽度变化。
+12. 修改内容后确认页面出现 `正在保存`，随后变为 `已保存`。
+13. 刷新 `/editor`，确认 `localStorage` 中的 `pageu.siteDraft` 可恢复草稿。
+14. 点击 `返回分析`，确认跳转 `/analyze`。
+15. 点击 `重新生成`，确认从当前 `createDraft` 和 `analysisResult` 重新派生草稿。
+16. 点击 `发布网站`，确认跳转 `/publish`。
+17. 执行 `npm test`，确认测试通过。
+18. 执行 `npm run build`，确认生产构建通过。
 
-## 7.1 本阶段新增状态结构
+## 8. 当前状态结构
 
-统一状态名为 `createDraft`，由 `CreateDraftProvider` 提供，当前保存在 React Context 中，并同步到 `localStorage`，便于页面切换后保持输入内容。
+### createDraft
+
+`createDraft` 由 `src/state/CreateDraftContext.jsx` 提供，当前保存在 React Context 中，并同步到 `localStorage`，用于保存创建页输入。
 
 ```js
 createDraft = {
@@ -134,14 +126,7 @@ createDraft = {
     company: '',
     jobType: '',
   },
-  experiences: [
-    {
-      id: 'experience-1',
-      title: '',
-      description: '',
-      collapsed: false,
-    },
-  ],
+  experiences: [],
   template: 'neo',
   meta: {
     version: 1,
@@ -150,45 +135,9 @@ createDraft = {
 };
 ```
 
-相关文件：
+### analysisResult
 
-- `src/types/createDraft.js`
-- `src/state/CreateDraftContext.jsx`
-
-## 7.2 新增页面结构
-
-`/create` 为单页滚动创建流，保留左下角小U 光团助手。
-
-- Block1：认识一下你，包含照片、姓名、联系方式、学校、专业。
-- Block2：你想成为谁，包含岗位 JD、目标公司、求职类型，以及假按钮 `让我理解一下这个岗位`。
-- Block3：告诉我你的经历，采用经历卡片模式，支持新增、编辑、删除、折叠。
-- Block4：选择你喜欢的主页风格，使用 `src/data/templates.js` 中维护的 6 个静态模板。
-- 底部：`生成我的个人网站`，点击后跳转 `/analyze`。
-
-## 7.3 下一阶段依赖
-
-- `/analyze` 可直接读取 `createDraft.jobInfo.jd`、`createDraft.experiences` 和 `createDraft.template` 做静态分析演示。
-- 编辑器阶段可继续复用 `createDraft`，或基于它派生 `siteDraft`。
-- 模板阶段应继续从 `src/data/templates.js` 扩展模板元数据。
-- 照片当前仅记录文件名，若下一阶段需要真实预览或上传，需要补充文件预览 URL 或上传存储策略。
-
-## 7.4 Phase 3 分析页页面结构
-
-`/analyze` 是卡片式 Mock AI 产品页，保留全局动态背景和左下角小U 光团助手，小U 提示为 `我先帮你整理了一版。`。
-
-- 页面标题：`这是我对你的理解`。
-- 顶部操作：`返回修改`，跳转 `/create`。
-- 分析卡片 1：岗位关键词，展示 4-6 个标签。
-- 分析卡片 2：能力重点，展示 4-6 个标签。
-- 分析卡片 3：推荐展示顺序，展示 4 个排序项。
-- 分析卡片 4：推荐强调经历，展示 2-3 条经历。
-- 底部主按钮：`确认生成`，跳转 `/editor`。
-- 底部次按钮：`哪里需要调整`，展开补充输入区。
-- 调整区：包含补充文本框、`重新分析` 按钮和模拟完成提示。
-
-## 7.5 analysisResult 数据说明
-
-`analysisResult` 当前由 `src/types/analysisResult.js` 中的 `createAnalysisResult(createDraft, userAdjustment)` 从 `createDraft` 派生，不调用真实 AI 接口。直接访问 `/analyze` 且没有输入数据时，会显示默认 Mock 内容。
+`analysisResult` 由 `src/types/analysisResult.js` 中的 `createAnalysisResult(createDraft, userAdjustment)` 派生，不调用真实 AI。
 
 ```js
 analysisResult = {
@@ -201,48 +150,114 @@ analysisResult = {
 };
 ```
 
-派生规则：
+### siteDraft
 
-- `jobKeywords`：优先根据岗位 JD 命中关键词，否则使用默认示例。
-- `abilityFocus`：优先根据岗位 JD 命中能力词，否则使用默认示例。
-- `displayOrder`：优先使用用户填写的经历标题，再补默认展示顺序。
-- `highlightedExperiences`：优先使用用户填写的经历标题，没有则使用默认示例。
-- `userAdjustment`：记录用户在调整区输入的补充说明。
-- `updatedAt`：生成 Mock 分析结果的时间。
+`siteDraft` 由 `src/lib/draftGenerator.js` 中的 `generateSiteDraft(createDraft, analysisResult)` 生成，编辑器内部继续实时修改该结构。
 
-## 8. 当前未完成内容
+```js
+siteDraft = {
+  profile: {
+    name: '',
+    targetRole: '',
+    headline: '',
+    intro: '',
+    contact: '',
+    school: '',
+    major: '',
+    photoName: '',
+  },
+  sections: [
+    {
+      id: '',
+      type: '',
+      title: '',
+      content: '',
+      items: [],
+      visible: true,
+      collapsed: false,
+    },
+  ],
+  theme: {
+    primaryColor: '',
+    background: '',
+    textColor: '',
+  },
+  template: '',
+  meta: {
+    version: 1,
+    source: 'mock-analysis',
+    updatedAt: '',
+  },
+};
+```
 
-- 未接入 AI 接口。
-- 未实现真实 AI 分析。
+相关文件：
+
+- `src/types/createDraft.js`
+- `src/types/analysisResult.js`
+- `src/types/siteDraft.js`
+- `src/lib/draftGenerator.js`
+- `src/state/CreateDraftContext.jsx`
+
+## 9. 编辑器页面结构
+
+`/editor` 是网站草稿编辑体验，不生成真实网站、不发布、不接 AI。
+
+- 顶部：`返回分析`、`重新生成`、`发布网站`。
+- 页面标题：`再调整一下，让它更像你`。
+- 左侧模块区：固定模块包括头像、个人介绍、经历、项目、技能、作品、联系方式。
+- 中间实时预览：展示头像占位、姓名、目标岗位、一句介绍、经历、技能、作品等草稿内容。
+- 右侧编辑区：编辑标题、文字、颜色、背景和模块显示状态。
+- 小U：左下角悬浮，提示 `已经很不错了，再调整一下吧`。
+
+## 10. 自动保存策略
+
+- 编辑器保存对象：`siteDraft`。
+- 保存位置：`localStorage`。
+- 保存键名：`pageu.siteDraft`。
+- 触发方式：编辑器状态变化后延迟保存。
+- 页面提示：先显示 `正在保存`，保存完成后显示 `已保存`。
+- 重新进入 `/editor` 时优先读取 `pageu.siteDraft`，没有本地草稿时再从 `createDraft` + `analysisResult` 生成。
+
+## 11. 当前未完成内容
+
+- 未接入真实 AI 接口。
 - 未实现真实网站生成。
+- 未实现真实发布与分享。
 - 未实现登录、数据库或后端。
-- 未实现编辑器真实编辑能力。
-- 未实现发布与分享能力。
-- 未实现最终个人网站真实数据渲染。
+- 未实现最终 `/site/:id` 的真实个人网站渲染。
+- 模块排序当前为按钮模拟，未接入真实拖拽。
+- 照片当前仍为文件名/占位展示，未做真实上传和图片预览。
 
-## 9. 下一阶段建议
+## 12. 下一阶段建议
 
-- 规划编辑器模块的组件边界与数据流。
-- 准备个人网站模板的首版视觉方案。
-- 定义从 `createDraft` 到分析结果、编辑器草稿的转换方式。
-- Phase 4 可实现 `/editor` 的静态编辑器壳，并读取 `analysisResult` / `createDraft` 作为初始内容。
+- Phase 5 可进入发布页 `/publish`，读取 `pageu.siteDraft` 展示发布前确认。
+- 定义 `/site/:id` 如何读取 `siteDraft` 并渲染最终个人网站。
+- 若需要更接近真实产品，可把编辑器模块拆分为独立组件，降低 `App.jsx` 体积。
+- 发布阶段仍建议保持 Mock，不引入后端和真实部署，优先保证比赛演示稳定。
 
-## 10. 已执行的 Git commit 信息
+## 13. 已执行的 Git commit 信息
 
-本阶段已按以下 commit message 提交：
+Phase 1：
 
 ```text
 feat: initialize PageU landing and app shell
 ```
 
-Phase 2 commit message：
+Phase 2：
 
 ```text
 feat: implement create flow and draft state
 ```
 
-Phase 3 commit message：
+Phase 3：
 
 ```text
 feat: implement mock analyze page
+```
+
+Phase 4：
+
+```text
+feat: implement editor and site draft
 ```
