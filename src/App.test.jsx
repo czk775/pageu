@@ -270,6 +270,23 @@ describe('PageU app shell', () => {
     expect(screen.getByText('希望它能帮更多人认识你')).toBeInTheDocument();
   });
 
+  it('shows toast feedback for copying the site link and downloading the qr code', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={['/publish']}>
+        <App />
+      </MemoryRouter>,
+    );
+
+    await screen.findByRole('img', { name: '当前网站二维码' });
+    await user.click(screen.getByRole('button', { name: '复制链接' }));
+    expect(screen.getByRole('status')).toHaveTextContent('已复制链接');
+
+    await user.click(screen.getByRole('button', { name: '下载二维码' }));
+    expect(screen.getByRole('status')).toHaveTextContent('二维码已下载');
+  });
+
   it('saves publishDraft and routes to the generated site', async () => {
     const user = userEvent.setup();
 

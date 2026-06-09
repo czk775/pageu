@@ -967,6 +967,23 @@ a {
   font-weight: 800;
 }
 
+.status-toast {
+  position: fixed;
+  right: 28px;
+  bottom: 128px;
+  z-index: 5;
+  max-width: min(320px, calc(100vw - 40px));
+  padding: 12px 16px;
+  border: 1px solid rgba(74, 181, 203, 0.3);
+  border-radius: 8px;
+  color: #12384c;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 18px 48px rgba(43, 144, 170, 0.18);
+  backdrop-filter: blur(18px);
+  font-size: 14px;
+  font-weight: 900;
+}
+
 .qr-box {
   display: grid;
   min-height: 230px;
