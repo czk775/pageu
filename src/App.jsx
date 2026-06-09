@@ -1,14 +1,24 @@
+import { useMemo, useState } from 'react';
 import { Link, Route, Routes, useNavigate } from 'react-router-dom';
-import { ArrowRight, ChevronDown, ChevronUp, Plus, Sparkles, Trash2 } from 'lucide-react';
+import {
+  ArrowRight,
+  Brain,
+  ChevronDown,
+  ChevronUp,
+  Highlighter,
+  ListChecks,
+  Plus,
+  RotateCcw,
+  Sparkles,
+  Tags,
+  Trash2,
+} from 'lucide-react';
 import { motion } from 'framer-motion';
 import { templates } from './data/templates';
 import { CreateDraftProvider, useCreateDraft } from './state/CreateDraftContext';
+import { createAnalysisResult } from './types/analysisResult';
 
 const placeholders = {
-  analyze: {
-    title: 'AI 分析页',
-    hint: '这是我对你的理解',
-  },
   editor: {
     title: '编辑页',
     hint: '再调整一下，让它更像你',
@@ -38,7 +48,7 @@ function DynamicBackground() {
   );
 }
 
-function XiaoU() {
+function XiaoU({ hint = '准备好开始了吗？' }) {
   return (
     <motion.aside
       className="xiaou-wrap"
@@ -57,7 +67,7 @@ function XiaoU() {
       </motion.div>
       <div className="xiaou-copy">
         <span>小U</span>
-        <p>准备好开始了吗？</p>
+        <p>{hint}</p>
       </div>
     </motion.aside>
   );
@@ -315,6 +325,122 @@ function CreatePage() {
   );
 }
 
+function AnalysisCard({ icon: Icon, title, children }) {
+  return (
+    <article className="analysis-card" aria-label={title}>
+      <div className="analysis-card-title">
+        <span className="analysis-icon">
+          <Icon size={21} strokeWidth={2.4} aria-hidden="true" />
+        </span>
+        <h2>{title}</h2>
+      </div>
+      {children}
+    </article>
+  );
+}
+
+function AnalyzePage() {
+  const navigate = useNavigate();
+  const { createDraft } = useCreateDraft();
+  const [adjustmentOpen, setAdjustmentOpen] = useState(false);
+  const [userAdjustment, setUserAdjustment] = useState('');
+  const [analysisMessage, setAnalysisMessage] = useState('');
+
+  const analysisResult = useMemo(
+    () => createAnalysisResult(createDraft, userAdjustment),
+    [createDraft, userAdjustment],
+  );
+
+  const handleReanalyze = () => {
+    setAnalysisMessage('已根据你的补充重新整理理解');
+  };
+
+  return (
+    <main className="analyze-page">
+      <DynamicBackground />
+      <section className="analyze-flow" aria-labelledby="analyze-title">
+        <header className="analyze-header">
+          <Link className="placeholder-brand" to="/">
+            PageU
+          </Link>
+          <Link className="return-action" to="/create">
+            返回修改
+          </Link>
+          <h1 id="analyze-title">这是我对你的理解</h1>
+        </header>
+
+        <div className="analysis-grid">
+          <AnalysisCard icon={Tags} title="岗位关键词">
+            <div className="analysis-tags">
+              {analysisResult.jobKeywords.map((keyword) => (
+                <span key={keyword}>{keyword}</span>
+              ))}
+            </div>
+          </AnalysisCard>
+
+          <AnalysisCard icon={Brain} title="能力重点">
+            <div className="analysis-tags focus-tags">
+              {analysisResult.abilityFocus.map((ability) => (
+                <span key={ability}>{ability}</span>
+              ))}
+            </div>
+          </AnalysisCard>
+
+          <AnalysisCard icon={ListChecks} title="推荐展示顺序">
+            <ol className="analysis-order">
+              {analysisResult.displayOrder.map((item, index) => (
+                <li key={`${item}-${index}`}>
+                  <span>{index + 1}</span>
+                  {item}
+                </li>
+              ))}
+            </ol>
+          </AnalysisCard>
+
+          <AnalysisCard icon={Highlighter} title="推荐强调经历">
+            <ul className="analysis-list">
+              {analysisResult.highlightedExperiences.map((experience) => (
+                <li key={experience}>{experience}</li>
+              ))}
+            </ul>
+          </AnalysisCard>
+        </div>
+
+        <div className="analyze-actions">
+          <button className="generate-action" type="button" onClick={() => navigate('/editor')}>
+            确认生成
+            <ArrowRight size={21} aria-hidden="true" />
+          </button>
+          <button className="adjust-action" type="button" onClick={() => setAdjustmentOpen((open) => !open)}>
+            哪里需要调整
+          </button>
+        </div>
+
+        {adjustmentOpen ? (
+          <div className="adjustment-panel">
+            <textarea
+              aria-label="补充调整说明"
+              placeholder="比如：我想突出比赛经历，弱化技术背景"
+              rows={4}
+              value={userAdjustment}
+              onChange={(event) => {
+                setUserAdjustment(event.target.value);
+                setAnalysisMessage('');
+              }}
+            />
+            <button className="secondary-action" type="button" onClick={handleReanalyze}>
+              <RotateCcw size={17} aria-hidden="true" />
+              重新分析
+            </button>
+            {analysisMessage ? <p className="analysis-message">{analysisMessage}</p> : null}
+          </div>
+        ) : null}
+      </section>
+      <XiaoU hint="我先帮你整理了一版。" />
+    </main>
+  );
+}
+
 function PlaceholderPage({ title, hint }) {
   return (
     <main className="placeholder-page">
@@ -337,7 +463,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/create" element={<CreatePage />} />
-        <Route path="/analyze" element={<PlaceholderPage {...placeholders.analyze} />} />
+        <Route path="/analyze" element={<AnalyzePage />} />
         <Route path="/editor" element={<PlaceholderPage {...placeholders.editor} />} />
         <Route path="/publish" element={<PlaceholderPage {...placeholders.publish} />} />
         <Route path="/site/:id" element={<PlaceholderPage {...placeholders.site} />} />

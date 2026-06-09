@@ -35,7 +35,6 @@ describe('PageU app shell', () => {
   });
 
   it.each([
-    ['/analyze', 'AI 分析页', '这是我对你的理解'],
     ['/editor', '编辑页', '再调整一下，让它更像你'],
     ['/publish', '发布页', '你的个人网站准备好了'],
     ['/site/demo', '个人网站页', '这里是生成后的个人网站'],
@@ -117,7 +116,7 @@ describe('PageU app shell', () => {
     await user.click(screen.getByRole('radio', { name: 'Flow' }));
 
     await user.click(screen.getByRole('button', { name: '生成我的个人网站' }));
-    expect(screen.getByRole('heading', { name: 'AI 分析页' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: '这是我对你的理解' })).toBeInTheDocument();
 
     await user.click(screen.getByRole('link', { name: 'PageU' }));
     await user.click(screen.getByRole('link', { name: '立即创建' }));
@@ -125,5 +124,55 @@ describe('PageU app shell', () => {
     expect(screen.getByLabelText('姓名')).toHaveValue('林小雨');
     expect(screen.getByLabelText('岗位 JD')).toHaveValue('前端实习生，负责 React 页面开发。');
     expect(screen.getByRole('radio', { name: 'Flow' })).toBeChecked();
+  });
+
+  it('renders the mock analyze page with four analysis cards', () => {
+    render(
+      <MemoryRouter initialEntries={['/analyze']}>
+        <App />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole('heading', { level: 1, name: '这是我对你的理解' })).toBeInTheDocument();
+    expect(screen.getByRole('article', { name: '岗位关键词' })).toBeInTheDocument();
+    expect(screen.getByRole('article', { name: '能力重点' })).toBeInTheDocument();
+    expect(screen.getByRole('article', { name: '推荐展示顺序' })).toBeInTheDocument();
+    expect(screen.getByRole('article', { name: '推荐强调经历' })).toBeInTheDocument();
+    expect(screen.getByText('我先帮你整理了一版。')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '返回修改' })).toHaveAttribute('href', '/create');
+  });
+
+  it('routes from analyze confirmation to editor', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={['/analyze']}>
+        <App />
+      </MemoryRouter>,
+    );
+
+    await user.click(screen.getByRole('button', { name: '确认生成' }));
+
+    expect(screen.getByRole('heading', { name: '编辑页' })).toBeInTheDocument();
+  });
+
+  it('opens adjustment input and simulates reanalysis', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={['/analyze']}>
+        <App />
+      </MemoryRouter>,
+    );
+
+    await user.click(screen.getByRole('button', { name: '哪里需要调整' }));
+
+    const adjustmentInput = screen.getByPlaceholderText('比如：我想突出比赛经历，弱化技术背景');
+    expect(adjustmentInput).toBeInTheDocument();
+
+    await user.type(adjustmentInput, '我想突出比赛经历');
+    await user.click(screen.getByRole('button', { name: '重新分析' }));
+
+    expect(screen.getByText('已根据你的补充重新整理理解')).toBeInTheDocument();
   });
 });
