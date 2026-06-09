@@ -1,12 +1,10 @@
-import { Link, Route, Routes } from 'react-router-dom';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { Link, Route, Routes, useNavigate } from 'react-router-dom';
+import { ArrowRight, ChevronDown, ChevronUp, Plus, Sparkles, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { templates } from './data/templates';
+import { CreateDraftProvider, useCreateDraft } from './state/CreateDraftContext';
 
 const placeholders = {
-  create: {
-    title: '创建页',
-    hint: '告诉我你的经历',
-  },
   analyze: {
     title: 'AI 分析页',
     hint: '这是我对你的理解',
@@ -103,6 +101,220 @@ function HomePage() {
   );
 }
 
+function Field({ id, label, children }) {
+  return (
+    <div className="create-field">
+      <label htmlFor={id}>{label}</label>
+      {children}
+    </div>
+  );
+}
+
+function CreatePage() {
+  const navigate = useNavigate();
+  const {
+    createDraft,
+    updateBasicInfo,
+    updateJobInfo,
+    addExperience,
+    updateExperience,
+    toggleExperience,
+    deleteExperience,
+    selectTemplate,
+  } = useCreateDraft();
+
+  const handleGenerate = (event) => {
+    event.preventDefault();
+    navigate('/analyze');
+  };
+
+  return (
+    <main className="create-page">
+      <DynamicBackground />
+      <form className="create-flow" onSubmit={handleGenerate}>
+        <header className="create-header">
+          <Link className="placeholder-brand" to="/">
+            PageU
+          </Link>
+          <h1>告诉我你的经历</h1>
+        </header>
+
+        <section className="create-block" aria-labelledby="basic-info-title">
+          <h2 id="basic-info-title">认识一下你</h2>
+          <div className="create-grid basic-grid">
+            <Field id="photo" label="照片">
+              <input
+                id="photo"
+                type="file"
+                accept="image/*"
+                onChange={(event) => updateBasicInfo('photoName', event.target.files?.[0]?.name || '')}
+              />
+              {createDraft.basicInfo.photoName ? (
+                <span className="field-note">{createDraft.basicInfo.photoName}</span>
+              ) : null}
+            </Field>
+            <Field id="name" label="姓名">
+              <input
+                id="name"
+                type="text"
+                value={createDraft.basicInfo.name}
+                onChange={(event) => updateBasicInfo('name', event.target.value)}
+              />
+            </Field>
+            <Field id="contact" label="联系方式">
+              <input
+                id="contact"
+                type="text"
+                value={createDraft.basicInfo.contact}
+                onChange={(event) => updateBasicInfo('contact', event.target.value)}
+              />
+            </Field>
+            <Field id="school" label="学校">
+              <input
+                id="school"
+                type="text"
+                value={createDraft.basicInfo.school}
+                onChange={(event) => updateBasicInfo('school', event.target.value)}
+              />
+            </Field>
+            <Field id="major" label="专业">
+              <input
+                id="major"
+                type="text"
+                value={createDraft.basicInfo.major}
+                onChange={(event) => updateBasicInfo('major', event.target.value)}
+              />
+            </Field>
+          </div>
+        </section>
+
+        <section className="create-block" aria-labelledby="job-info-title">
+          <h2 id="job-info-title">你想成为谁</h2>
+          <Field id="job-jd" label="岗位 JD">
+            <textarea
+              id="job-jd"
+              required
+              rows={5}
+              value={createDraft.jobInfo.jd}
+              onChange={(event) => updateJobInfo('jd', event.target.value)}
+            />
+          </Field>
+          <div className="create-grid two-grid">
+            <Field id="target-company" label="目标公司">
+              <input
+                id="target-company"
+                type="text"
+                value={createDraft.jobInfo.company}
+                onChange={(event) => updateJobInfo('company', event.target.value)}
+              />
+            </Field>
+            <Field id="job-type" label="求职类型">
+              <select
+                id="job-type"
+                value={createDraft.jobInfo.jobType}
+                onChange={(event) => updateJobInfo('jobType', event.target.value)}
+              >
+                <option value="">暂不选择</option>
+                <option value="internship">实习</option>
+                <option value="campus">校招</option>
+                <option value="project">项目合作</option>
+              </select>
+            </Field>
+          </div>
+          <button className="secondary-action" type="button">
+            让我理解一下这个岗位
+          </button>
+        </section>
+
+        <section className="create-block" aria-labelledby="experience-title">
+          <div className="block-title-row">
+            <h2 id="experience-title">告诉我你的经历</h2>
+            <p>建议描述：背景、目标、行动、结果</p>
+          </div>
+
+          <div className="experience-list">
+            {createDraft.experiences.map((experience, index) => {
+              const number = index + 1;
+              return (
+                <fieldset className="experience-card" key={experience.id} aria-label={`经历${number}`}>
+                  <legend>经历{number}</legend>
+                  <div className="experience-actions">
+                    <button
+                      type="button"
+                      aria-label={experience.collapsed ? `编辑经历${number}` : `折叠经历${number}`}
+                      onClick={() => toggleExperience(experience.id)}
+                    >
+                      {experience.collapsed ? <ChevronDown size={18} /> : <ChevronUp size={18} />}
+                    </button>
+                    <button type="button" aria-label={`删除经历${number}`} onClick={() => deleteExperience(experience.id)}>
+                      <Trash2 size={17} />
+                    </button>
+                  </div>
+                  {experience.collapsed ? (
+                    <p className="experience-summary">{experience.title || '还没有填写标题'}</p>
+                  ) : (
+                    <div className="experience-fields">
+                      <Field id={`experience-title-${experience.id}`} label={`经历标题 ${number}`}>
+                        <input
+                          id={`experience-title-${experience.id}`}
+                          type="text"
+                          value={experience.title}
+                          onChange={(event) => updateExperience(experience.id, 'title', event.target.value)}
+                        />
+                      </Field>
+                      <Field id={`experience-description-${experience.id}`} label={`经历描述 ${number}`}>
+                        <textarea
+                          id={`experience-description-${experience.id}`}
+                          rows={5}
+                          value={experience.description}
+                          onChange={(event) => updateExperience(experience.id, 'description', event.target.value)}
+                        />
+                      </Field>
+                    </div>
+                  )}
+                </fieldset>
+              );
+            })}
+          </div>
+
+          <button className="add-experience-action" type="button" onClick={addExperience}>
+            <Plus size={18} />
+            继续添加经历
+          </button>
+        </section>
+
+        <section className="create-block" aria-labelledby="template-title">
+          <h2 id="template-title">选择你喜欢的主页风格</h2>
+          <div className="template-grid">
+            {templates.map((template) => (
+              <label className="template-card" key={template.id}>
+                <input
+                  aria-label={template.name}
+                  checked={createDraft.template === template.id}
+                  name="template"
+                  onChange={() => selectTemplate(template.id)}
+                  type="radio"
+                  value={template.id}
+                />
+                <span>{template.name}</span>
+                <small>{template.tone}</small>
+              </label>
+            ))}
+          </div>
+        </section>
+
+        <div className="create-footer">
+          <button className="generate-action" type="submit">
+            生成我的个人网站
+            <ArrowRight size={21} />
+          </button>
+        </div>
+      </form>
+      <XiaoU />
+    </main>
+  );
+}
+
 function PlaceholderPage({ title, hint }) {
   return (
     <main className="placeholder-page">
@@ -121,13 +333,15 @@ function PlaceholderPage({ title, hint }) {
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/create" element={<PlaceholderPage {...placeholders.create} />} />
-      <Route path="/analyze" element={<PlaceholderPage {...placeholders.analyze} />} />
-      <Route path="/editor" element={<PlaceholderPage {...placeholders.editor} />} />
-      <Route path="/publish" element={<PlaceholderPage {...placeholders.publish} />} />
-      <Route path="/site/:id" element={<PlaceholderPage {...placeholders.site} />} />
-    </Routes>
+    <CreateDraftProvider>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/create" element={<CreatePage />} />
+        <Route path="/analyze" element={<PlaceholderPage {...placeholders.analyze} />} />
+        <Route path="/editor" element={<PlaceholderPage {...placeholders.editor} />} />
+        <Route path="/publish" element={<PlaceholderPage {...placeholders.publish} />} />
+        <Route path="/site/:id" element={<PlaceholderPage {...placeholders.site} />} />
+      </Routes>
+    </CreateDraftProvider>
   );
 }
