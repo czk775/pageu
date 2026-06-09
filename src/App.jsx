@@ -1,17 +1,23 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, Route, Routes, useNavigate } from 'react-router-dom';
+import { Link, Route, Routes, useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowRight,
   Brain,
   ChevronDown,
   ChevronUp,
+  Copy,
+  Download,
+  ExternalLink,
   Eye,
   EyeOff,
+  Globe2,
   Highlighter,
   ListChecks,
+  LockKeyhole,
   Monitor,
   Palette,
   Plus,
+  QrCode,
   RotateCcw,
   Smartphone,
   Sparkles,
@@ -19,22 +25,16 @@ import {
   Trash2,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import QRCode from 'qrcode';
 import { templates } from './data/templates';
 import { generateSiteDraft } from './lib/draftGenerator';
+import { TemplateRenderer } from './renderers/TemplateRenderer';
 import { CreateDraftProvider, useCreateDraft } from './state/CreateDraftContext';
 import { createAnalysisResult } from './types/analysisResult';
+import { createPublishDraft, normalizePublishDraft, PUBLISH_STORAGE_KEY } from './types/publishDraft';
 import { normalizeSiteDraft, sectionLabels, SITE_DRAFT_STORAGE_KEY } from './types/siteDraft';
 
-const placeholders = {
-  publish: {
-    title: '发布页',
-    hint: '你的个人网站准备好了',
-  },
-  site: {
-    title: '个人网站页',
-    hint: '这里是生成后的个人网站',
-  },
-};
+const PUBLIC_SITE_PATH = '/site/demo';
 
 function DynamicBackground() {
   return (
@@ -457,6 +457,20 @@ const loadSiteDraft = (fallbackDraft) => {
   }
 };
 
+const loadPublishDraft = () => {
+  if (typeof window === 'undefined') {
+    return createPublishDraft();
+  }
+
+  try {
+    return normalizePublishDraft(JSON.parse(window.localStorage.getItem(PUBLISH_STORAGE_KEY)));
+  } catch {
+    return createPublishDraft();
+  }
+};
+
+const toSvgDataUrl = (svg) => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+
 function EditorPage() {
   const navigate = useNavigate();
   const { createDraft } = useCreateDraft();
@@ -745,6 +759,245 @@ function EditorPage() {
   );
 }
 
+function PublishPage() {
+  const navigate = useNavigate();
+  const { createDraft } = useCreateDraft();
+  const analysisResult = useMemo(() => createAnalysisResult(createDraft), [createDraft]);
+  const generatedDraft = useMemo(() => generateSiteDraft(createDraft, analysisResult), [analysisResult, createDraft]);
+  const siteDraft = useMemo(() => loadSiteDraft(generatedDraft), [generatedDraft]);
+  const [previewMode, setPreviewMode] = useState('desktop');
+  const [publishDraft, setPublishDraft] = useState(() => loadPublishDraft());
+  const [qrCodeUrl, setQrCodeUrl] = useState('');
+  const [copyMessage, setCopyMessage] = useState('');
+  const siteUrl = PUBLIC_SITE_PATH;
+
+  useEffect(() => {
+    window.localStorage.setItem(
+      PUBLISH_STORAGE_KEY,
+      JSON.stringify({
+        ...publishDraft,
+        published: true,
+        siteId: 'demo',
+      }),
+    );
+  }, [publishDraft]);
+
+  useEffect(() => {
+    let active = true;
+    const absoluteUrl = `${window.location.origin}${PUBLIC_SITE_PATH}`;
+
+    QRCode.toString(absoluteUrl, {
+      errorCorrectionLevel: 'M',
+      margin: 1,
+      type: 'svg',
+      width: 220,
+      color: {
+        dark: '#12384c',
+        light: '#f7feff',
+      },
+    }).then((svg) => {
+      if (active) {
+        setQrCodeUrl(toSvgDataUrl(svg));
+      }
+    });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const handleVisibilityChange = (visibility) => {
+    setPublishDraft((draft) =>
+      createPublishDraft({
+        ...draft,
+        visibility,
+        publishedAt: new Date().toISOString(),
+      }),
+    );
+  };
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard?.writeText(siteUrl);
+      setCopyMessage('链接已复制');
+    } catch {
+      setCopyMessage('链接已准备好');
+    }
+  };
+
+  const handleVisit = () => {
+    window.localStorage.setItem(
+      PUBLISH_STORAGE_KEY,
+      JSON.stringify(
+        createPublishDraft({
+          ...publishDraft,
+          siteId: 'demo',
+          published: true,
+          publishedAt: new Date().toISOString(),
+        }),
+      ),
+    );
+    navigate(PUBLIC_SITE_PATH);
+  };
+
+  return (
+    <main className="publish-page">
+      <DynamicBackground />
+      <section className="publish-shell" aria-labelledby="publish-title">
+        <header className="publish-header">
+          <Link className="placeholder-brand" to="/">
+            PageU
+          </Link>
+          <h1 id="publish-title">你的个人网站准备好了</h1>
+        </header>
+
+        <section className="publish-card publish-preview-card" aria-label="网站预览">
+          <div className="publish-card-title">
+            <div>
+              <span>区域1</span>
+              <h2>网站预览</h2>
+            </div>
+            <div className="preview-mode-switch" aria-label="发布预览模式">
+              <button
+                type="button"
+                className={previewMode === 'desktop' ? 'active' : ''}
+                onClick={() => setPreviewMode('desktop')}
+              >
+                <Monitor size={17} aria-hidden="true" />
+                电脑
+              </button>
+              <button
+                type="button"
+                className={previewMode === 'mobile' ? 'active' : ''}
+                onClick={() => setPreviewMode('mobile')}
+              >
+                <Smartphone size={17} aria-hidden="true" />
+                手机
+              </button>
+            </div>
+          </div>
+          <div className="publish-preview-frame">
+            <TemplateRenderer siteDraft={siteDraft} previewMode={previewMode} className="publish-render-preview" />
+          </div>
+        </section>
+
+        <div className="publish-grid">
+          <section className="publish-card" aria-label="网站地址">
+            <div className="publish-card-title">
+              <span className="publish-icon">
+                <Globe2 size={20} aria-hidden="true" />
+              </span>
+              <div>
+                <span>区域2</span>
+                <h2>网站地址</h2>
+              </div>
+            </div>
+            <Link className="site-link-box" to={siteUrl}>
+              {siteUrl}
+            </Link>
+            <button className="secondary-action publish-copy-action" type="button" onClick={handleCopy}>
+              <Copy size={17} aria-hidden="true" />
+              复制
+            </button>
+            {copyMessage ? <p className="publish-message">{copyMessage}</p> : null}
+          </section>
+
+          <section className="publish-card" aria-label="二维码">
+            <div className="publish-card-title">
+              <span className="publish-icon">
+                <QrCode size={20} aria-hidden="true" />
+              </span>
+              <div>
+                <span>区域3</span>
+                <h2>二维码</h2>
+              </div>
+            </div>
+            <div className="qr-box">
+              {qrCodeUrl ? <img alt="当前网站二维码" src={qrCodeUrl} /> : <span>生成中</span>}
+            </div>
+            <a className="secondary-action qr-download-action" href={qrCodeUrl || '#'} download="pageu-site-qr.svg">
+              <Download size={17} aria-hidden="true" />
+              下载二维码
+            </a>
+          </section>
+
+          <section className="publish-card" aria-label="访问权限">
+            <div className="publish-card-title">
+              <span className="publish-icon">
+                <LockKeyhole size={20} aria-hidden="true" />
+              </span>
+              <div>
+                <span>区域4</span>
+                <h2>访问权限</h2>
+              </div>
+            </div>
+            <div className="visibility-options">
+              {[
+                ['public', '公开'],
+                ['private', '私密'],
+                ['password', '密码访问'],
+              ].map(([value, label]) => (
+                <label key={value}>
+                  <input
+                    checked={publishDraft.visibility === value}
+                    name="visibility"
+                    onChange={() => handleVisibilityChange(value)}
+                    type="radio"
+                    value={value}
+                  />
+                  {label}
+                </label>
+              ))}
+            </div>
+          </section>
+        </div>
+
+        <div className="publish-actions">
+          <button className="generate-action" type="button" onClick={handleVisit}>
+            <ExternalLink size={20} aria-hidden="true" />
+            访问网站
+          </button>
+          <button className="adjust-action" type="button" onClick={handleCopy}>
+            <Copy size={17} aria-hidden="true" />
+            复制链接
+          </button>
+          <a className="adjust-action qr-action-link" href={qrCodeUrl || '#'} download="pageu-site-qr.svg">
+            <Download size={17} aria-hidden="true" />
+            下载二维码
+          </a>
+          <Link className="return-action" to="/editor">
+            继续编辑
+          </Link>
+        </div>
+      </section>
+      <XiaoU hint="希望它能帮更多人认识你" />
+    </main>
+  );
+}
+
+function SitePage() {
+  const { id } = useParams();
+  const { createDraft } = useCreateDraft();
+  const analysisResult = useMemo(() => createAnalysisResult(createDraft), [createDraft]);
+  const generatedDraft = useMemo(() => generateSiteDraft(createDraft, analysisResult), [analysisResult, createDraft]);
+  const siteDraft = useMemo(() => loadSiteDraft(generatedDraft), [generatedDraft]);
+
+  return (
+    <TemplateRenderer
+      as="main"
+      className="generated-site-page"
+      previewMode="desktop"
+      siteDraft={{
+        ...siteDraft,
+        meta: {
+          ...siteDraft.meta,
+          siteId: id || 'demo',
+        },
+      }}
+    />
+  );
+}
+
 function PlaceholderPage({ title, hint }) {
   return (
     <main className="placeholder-page">
@@ -769,8 +1022,8 @@ export default function App() {
         <Route path="/create" element={<CreatePage />} />
         <Route path="/analyze" element={<AnalyzePage />} />
         <Route path="/editor" element={<EditorPage />} />
-        <Route path="/publish" element={<PlaceholderPage {...placeholders.publish} />} />
-        <Route path="/site/:id" element={<PlaceholderPage {...placeholders.site} />} />
+        <Route path="/publish" element={<PublishPage />} />
+        <Route path="/site/:id" element={<SitePage />} />
       </Routes>
     </CreateDraftProvider>
   );
