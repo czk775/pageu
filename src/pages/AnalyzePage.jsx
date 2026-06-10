@@ -127,7 +127,7 @@ export function AnalyzePage() {
         ) : null}
 
         <div className="analyze-actions">
-          <PrimaryButton icon={ArrowRight} onClick={() => navigate('/editor')}>
+          <PrimaryButton icon={ArrowRight} onClick={() => navigate('/editor', { state: { regenerateSiteDraft: true } })}>
             确认生成
           </PrimaryButton>
           <button className="adjust-action" type="button" onClick={() => setAdjustmentOpen((open) => !open)}>

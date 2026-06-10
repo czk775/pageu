@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ChevronDown, ChevronUp, Eye, EyeOff, Monitor, Palette, Smartphone } from 'lucide-react';
 import { DynamicBackground } from '../components/DynamicBackground';
 import { FloatingAssistant } from '../components/FloatingAssistant';
@@ -13,10 +13,12 @@ import { sectionLabels } from '../types/siteDraft';
 
 export function EditorPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { createDraft } = useCreateDraft();
   const analysisResult = useMemo(() => createAnalysisResult(createDraft), [createDraft]);
   const generatedDraft = useMemo(() => generateSiteDraft(createDraft, analysisResult), [analysisResult, createDraft]);
-  const [siteDraft, setSiteDraft] = useState(() => loadSiteDraft(generatedDraft));
+  const shouldRegenerateDraft = location.state?.regenerateSiteDraft === true;
+  const [siteDraft, setSiteDraft] = useState(() => (shouldRegenerateDraft ? generatedDraft : loadSiteDraft(generatedDraft)));
   const [selectedSectionId, setSelectedSectionId] = useState('section-intro');
   const [previewMode, setPreviewMode] = useState('desktop');
   const [saveStatus, setSaveStatus] = useState('已保存');
@@ -95,6 +97,11 @@ export function EditorPage() {
     setSelectedSectionId('section-intro');
   };
 
+  const handlePublish = () => {
+    saveSiteDraft(siteDraft);
+    navigate('/publish');
+  };
+
   return (
     <main className="editor-page">
       <DynamicBackground />
@@ -110,7 +117,7 @@ export function EditorPage() {
             <button className="adjust-action" type="button" onClick={handleRegenerate}>
               重新生成
             </button>
-            <button className="generate-action compact-generate" type="button" onClick={() => navigate('/publish')}>
+            <button className="generate-action compact-generate" type="button" onClick={handlePublish}>
               发布网站
             </button>
           </div>

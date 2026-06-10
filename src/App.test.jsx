@@ -304,6 +304,33 @@ describe('PageU app shell', () => {
     expect(screen.getByRole('heading', { level: 1, name: '再调整一下，让它更像你' })).toBeInTheDocument();
   });
 
+  it('regenerates the editor draft from current create input after analyze confirmation', async () => {
+    const user = userEvent.setup();
+    const staleDraft = generateSiteDraft(createInitialDraft());
+    localStorage.setItem(SITE_DRAFT_STORAGE_KEY, JSON.stringify(staleDraft));
+
+    render(
+      <MemoryRouter initialEntries={['/create']}>
+        <App />
+      </MemoryRouter>,
+    );
+
+    await user.type(screen.getByLabelText('姓名'), '陈一诺');
+    await user.type(screen.getByLabelText('岗位 JD'), '用户体验设计实习生，负责用户研究和原型设计。');
+    await user.type(screen.getByLabelText('经历标题 1'), 'AI 简历优化项目');
+    await user.type(screen.getByLabelText('经历描述 1'), '负责访谈用户并整理优化建议。');
+    await user.click(screen.getByRole('button', { name: '生成我的个人网站' }));
+
+    await screen.findByRole('heading', { level: 1, name: '分析结果' });
+    await user.click(screen.getByRole('button', { name: '确认生成' }));
+
+    expect(screen.getByRole('heading', { level: 1, name: '再调整一下，让它更像你' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: '陈一诺' })).toBeInTheDocument();
+    expect(screen.getByText('用户体验设计实习生')).toBeInTheDocument();
+    expect(screen.getAllByText('AI 简历优化项目').length).toBeGreaterThan(0);
+    expect(screen.queryByRole('heading', { level: 2, name: 'PageU 同学' })).not.toBeInTheDocument();
+  });
+
   it('opens adjustment input and simulates reanalysis', async () => {
     const user = userEvent.setup();
 
