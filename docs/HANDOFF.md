@@ -748,3 +748,126 @@ ContainsRoot=True
 ```text
 feat: rebuild generated output as portfolio website
 ```
+
+## 43. Phase 8.1 完成内容
+
+本阶段彻底重写最终个人网站渲染器，将 `/site/:id` 从“网页简历 / 编辑器预览壳”改为真正的 Portfolio Website。
+
+完成内容：
+- `TemplateRenderer` 改为纯模板选择器，不再承载所有模板和卡片逻辑。
+- 新增 `mode="site" | "preview"`，最终网站使用全屏 `site` 模式，编辑器和发布页使用缩放 `preview` 模式。
+- 拆分六个独立模板组件：Neo、Pure、Flow、Grid、Canvas、Glass。
+- 抽取 Portfolio 共享组件：导航、Hero、About、ProjectCard、Projects、Skills、Works、Contact、Highlights。
+- 重写项目卡片，移除旧的 `Problem / Action / Result` 三列窄排结构。
+- `/site/demo` 现在包含完整 Hero、顶部导航、CTA、About、Featured Projects、Works、Skills、Contact。
+- 编辑器和发布页继续可预览，但不再影响最终网站的全屏布局。
+
+## 44. 为什么重写 TemplateRenderer
+
+Phase 8 的渲染器仍有几个结构性问题：
+- 所有模板、区块、项目卡片写在一个大文件中，难以继续打磨。
+- 旧项目卡片使用三列 `Problem / Action / Result`，中文内容会被挤成窄列，阅读体验差。
+- 最终网站和编辑器预览共用同一尺寸思路，导致 `/site/demo` 像被塞进预览容器。
+- 六个模板差异不够明显，更多像换色而不是不同网站。
+
+Phase 8.1 的重写思路是：最终站点按真实网站布局设计，编辑器/发布页只调用缩放预览。
+
+## 45. 新模板组件结构
+
+```text
+src/renderers/
+├── TemplateRenderer.jsx
+├── shared/
+│   ├── AboutSection.jsx
+│   ├── ContactSection.jsx
+│   ├── HeroSection.jsx
+│   ├── HighlightsStrip.jsx
+│   ├── PortfolioNav.jsx
+│   ├── ProjectCard.jsx
+│   ├── ProjectsSection.jsx
+│   ├── SkillPills.jsx
+│   ├── WorksLinks.jsx
+│   └── portfolioUtils.js
+└── templates/
+    ├── CanvasTemplate.jsx
+    ├── FlowTemplate.jsx
+    ├── GlassTemplate.jsx
+    ├── GridTemplate.jsx
+    ├── NeoTemplate.jsx
+    └── PureTemplate.jsx
+```
+
+## 46. site mode / preview mode 说明
+
+- `mode="site"`：用于 `/site/:id`，全宽、无编辑器外壳、Hero 接近满屏。
+- `mode="preview"`：用于 `/editor` 和 `/publish`，将完整个人网站缩放到预览容器中。
+- `previewMode="desktop" | "mobile"` 继续保留，用于编辑器和发布页切换设备预览。
+
+调用点：
+- `GeneratedSitePage`：`mode="site"`
+- `EditorPage`：`mode="preview"`
+- `PublishPage`：`mode="preview"`
+
+## 47. 六模板视觉差异
+
+- Neo：科技创业风，渐变背景、大 Hero、浮动信息卡、发光技能标签。
+- Pure：极简高级，黑白灰、大留白、单栏 case study。
+- Flow：杂志叙事风，分栏首屏、柔和背景、项目像文章故事。
+- Grid：结构化 Bento 风，网格背景、模块化信息块、高信息密度。
+- Canvas：创意画布风，暖色块、不对称布局、作品链接优先。
+- Glass：玻璃拟态轻科技，柔和渐变、透明玻璃卡、浮动内容块。
+
+## 48. ProjectCard 新结构
+
+新项目卡片结构：
+- 项目标题
+- 角色 / 时间
+- 项目简介
+- “我做了什么” bullet 列表
+- “产出与价值”
+- “岗位关联”
+- tags
+- 查看项目按钮
+
+已移除：
+- `Problem`
+- `Action`
+- `Result`
+- `.portfolio-project-points` 三列窄排结构
+
+## 49. 当前未完成
+
+- 编辑器右侧仍不是完整 Portfolio 可视化编辑器。
+- 模板仍是前端 React 组件，不是可远程安装的模板包。
+- 未接真实发布服务，仍使用 localStorage 模拟发布。
+- 未做 Playwright 截图级自动化验收，当前环境没有安装 Playwright。
+
+## 50. Phase 8.1 测试结果
+
+已执行：
+
+```bash
+npm run test
+npm run build
+```
+
+结果：
+
+```text
+npm run test: 32 tests passed
+npm run build: success
+```
+
+本地服务验证：
+
+```text
+http://127.0.0.1:5174/site/demo
+StatusCode=200
+PageU=True
+```
+
+## 51. Phase 8.1 commit 信息
+
+```text
+fix: render generated output as full portfolio website
+```

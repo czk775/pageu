@@ -25,6 +25,7 @@ export function GeneratedSitePage() {
       <TemplateRenderer
         as="main"
         className="generated-site-page"
+        mode="site"
         previewMode="desktop"
         siteDraft={{
           ...siteDraft,

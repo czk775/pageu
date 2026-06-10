@@ -193,7 +193,7 @@ export function EditorPage() {
               </div>
             </div>
 
-            <TemplateRenderer siteDraft={siteDraft} previewMode={previewMode} className="editor-render-preview" />
+            <TemplateRenderer siteDraft={siteDraft} mode="preview" previewMode={previewMode} className="editor-render-preview" />
           </section>
 
           <aside className="editor-panel edit-panel" aria-label="编辑区">

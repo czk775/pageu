@@ -131,7 +131,7 @@ export function PublishPage() {
             </div>
           </div>
           <div className="publish-preview-frame">
-            <TemplateRenderer siteDraft={siteDraft} previewMode={previewMode} className="publish-render-preview" />
+            <TemplateRenderer siteDraft={siteDraft} mode="preview" previewMode={previewMode} className="publish-render-preview" />
           </div>
         </GlassCard>
 
