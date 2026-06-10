@@ -118,7 +118,7 @@ export function FloatingAssistant({ hint = '有什么问题可以问我哦' }) {
           <span className="xiaou-eye xiaou-eye-right" />
         </motion.div>
         <div className="xiaou-copy">
-          <span>小U</span>
+          <span>小U:</span>
           <p>{displayHint}</p>
         </div>
       </motion.button>

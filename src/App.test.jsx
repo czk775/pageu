@@ -120,7 +120,7 @@ describe('PageU app shell', () => {
     expect(screen.getByText('PageU')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: '生成你的个人网站' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '立即创建' })).toHaveAttribute('href', '/create');
-    expect(screen.getByText('小U')).toBeInTheDocument();
+    expect(screen.getByText('小U:')).toBeInTheDocument();
     expect(screen.getByText('准备好开始了吗')).toBeInTheDocument();
   });
 
