@@ -2,7 +2,7 @@
 
 ## 1. 当前阶段名称
 
-Phase 7 — 接入真实 AI（阿里百炼 / 通义千问 / DashScope OpenAI 兼容接口）。
+Phase 7.6 — 体验细节修缮与小U互动升级。
 
 ## 2. Phase 7 完成内容
 
@@ -265,3 +265,134 @@ Phase 7：
 ```text
 feat: connect qwen ai analysis with mock fallback
 ```
+
+Phase 7.5：
+
+```text
+test: stabilize pageu before deployment
+```
+
+Phase 7.6：
+
+```text
+feat: enhance assistant interaction and create flow polish
+```
+
+## 16. Phase 7.6 完成内容
+
+- 在不改变主流程和路由的前提下，升级小U为轻量悬浮咨询助手。
+- 创建页删除 `让我理解一下这个岗位` 按钮，避免与 `/analyze` 的真实分析动作重复。
+- 创建页区块标题调整为：
+  - `个人基本信息`
+  - `岗位信息`
+  - `经历信息`
+  - `技能证书`
+- 创建页新增 `技能关键词` 与 `证书/奖项` 两个 textarea 字段。
+- `createDraft` 新增 `skillsInfo`，并保持旧 localStorage 草稿兼容。
+- `draftGenerator` 会把技能关键词和证书/奖项合并进 siteDraft 的技能模块。
+- 6 个模板选择卡片增加差异化视觉预览，只影响创建页选择卡片，不重做最终模板。
+- `/analyze` 标题状态调整为：
+  - 加载中：`分析中`
+  - 完成后：`分析结果`
+- 首页小U文案为 `准备好开始了吗`，创建页及之后页面小U默认文案为 `有什么问题可以问我哦`。
+
+## 17. 小U互动助手说明
+
+- 文件：`src/components/FloatingAssistant.jsx`
+- 小U仍然左下角悬浮，保持浅蓝到青绿渐变光团形象。
+- hover 时会增强浮动、轻微放大，并显示更开心的眼睛状态。
+- 光团眼睛通过 CSS keyframes 周期性 wink，增加陪伴感。
+- 点击小U会打开悬浮聊天框，不进入独立页面，不阻断主流程。
+- 聊天框支持关闭，关闭后恢复悬浮状态。
+- 本阶段问答为本地规则，不调用真实 AI。
+- 已支持的问题方向：
+  - 怎么填写经历
+  - JD 是什么
+  - 模板怎么选
+  - 为什么要生成个人网站
+  - 能不能重新修改
+  - 其他问题走通用引导回答
+
+## 18. 创建页文案和字段调整
+
+创建页仍然是单页滚动，不新增步骤切换。
+
+新增数据结构：
+
+```js
+createDraft = {
+  skillsInfo: {
+    keywords: '',
+    certificates: '',
+  },
+};
+```
+
+兼容策略：
+
+- `normalizeDraft` 会为旧草稿补齐 `skillsInfo`。
+- `CreateDraftContext` 新增 `updateSkillsInfo(field, value)`。
+- `draftGenerator` 使用 `skillsInfo.keywords` 与 `skillsInfo.certificates` 生成技能模块内容。
+
+## 19. 模板卡片视觉优化说明
+
+- `TemplateCard` 现在会按模板 id 添加 `template-card-{id}` 类名。
+- `styles.css` 为 6 个模板卡片增加独立视觉：
+  - Neo：蓝紫/青色灵动渐变。
+  - Pure：黑白灰极简留白。
+  - Flow：淡紫/粉/蓝柔和流线。
+  - Grid：网格背景和模块边框。
+  - Canvas：暖色与青绿色撞色画布感。
+  - Glass：透明玻璃拟态和浅蓝青绿光感。
+- 该优化仅影响创建页模板选择卡片，不改变最终网站模板渲染。
+
+## 20. 本阶段新增/修改文件
+
+- `src/App.test.jsx`
+- `src/components/FloatingAssistant.jsx`
+- `src/components/TemplateCard.jsx`
+- `src/lib/draftGenerator.js`
+- `src/pages/AnalyzePage.jsx`
+- `src/pages/CreatePage.jsx`
+- `src/pages/EditorPage.jsx`
+- `src/pages/HomePage.jsx`
+- `src/pages/PublishPage.jsx`
+- `src/state/CreateDraftContext.jsx`
+- `src/styles.css`
+- `src/types/createDraft.js`
+- `docs/HANDOFF.md`
+
+## 21. Phase 7.6 测试结果
+
+本阶段新增/更新测试覆盖：
+
+- 创建页不再显示 `让我理解一下这个岗位`。
+- 创建页显示 `个人基本信息`、`岗位信息`、`经历信息`、`技能证书`。
+- 模板卡片仍可选择。
+- 小U可以点击打开聊天框。
+- 小U聊天框可以关闭。
+- 小U规则问答可以返回内容。
+- 分析页加载状态标题为 `分析中`。
+- 分析完成后标题为 `分析结果`。
+
+当前验证命令：
+
+```bash
+npm test
+npm run build
+```
+
+最近一次阶段内测试：
+
+```text
+npm test -- --run src/App.test.jsx: 20 tests passed
+npm test: 20 tests passed
+npm run build: success
+```
+
+## 22. 下一阶段建议
+
+- 若进入正式产品化阶段，将小U规则问答迁移到后端 AI 助手，不在前端暴露密钥。
+- 为 `skillsInfo` 增加更细的 tag 输入体验，但当前 MVP 保持 textarea 更稳定。
+- 给模板生态增加独立配置结构，让选择卡片和最终模板共享设计 token。
+- 部署前补一轮移动端真实设备截图验收。

@@ -4,6 +4,12 @@ import { createSection, defaultSectionOrder } from '../types/siteDraft';
 const fallbackSkills = ['产品思维', 'React 开发', '沟通协作', '项目落地'];
 const fallbackWorks = ['个人网站作品集', '校园项目展示'];
 
+const splitListText = (value = '') =>
+  value
+    .split(/[，,、；;\n]/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+
 const extractTargetRole = (jd = '') => {
   const firstPhrase = jd.split(/[，,。.；;\n]/).find(Boolean)?.trim();
   return firstPhrase || '目标岗位';
@@ -37,7 +43,13 @@ export const generateSiteDraft = (createDraft, analysisResult = createAnalysisRe
   const major = createDraft?.basicInfo?.major?.trim();
   const targetRole = extractTargetRole(createDraft?.jobInfo?.jd);
   const experienceItems = toExperienceItems(createDraft?.experiences);
-  const skills = (analysisResult?.abilityFocus?.length ? analysisResult.abilityFocus : fallbackSkills).slice(0, 6);
+  const enteredSkills = splitListText(createDraft?.skillsInfo?.keywords);
+  const certificates = splitListText(createDraft?.skillsInfo?.certificates);
+  const skills = [
+    ...enteredSkills,
+    ...(analysisResult?.abilityFocus?.length ? analysisResult.abilityFocus : fallbackSkills),
+    ...certificates,
+  ].slice(0, 8);
 
   const sectionMap = {
     avatar: createSection('avatar', {

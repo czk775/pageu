@@ -20,6 +20,10 @@ export const createInitialDraft = () => ({
     company: '',
     jobType: '',
   },
+  skillsInfo: {
+    keywords: '',
+    certificates: '',
+  },
   experiences: [
     {
       id: 'experience-1',
@@ -52,6 +56,10 @@ export const normalizeDraft = (draft) => {
     jobInfo: {
       ...initialDraft.jobInfo,
       ...draft.jobInfo,
+    },
+    skillsInfo: {
+      ...initialDraft.skillsInfo,
+      ...draft.skillsInfo,
     },
     experiences:
       Array.isArray(draft.experiences) && draft.experiences.length > 0

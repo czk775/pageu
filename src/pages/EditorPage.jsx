@@ -298,7 +298,7 @@ export function EditorPage() {
         </div>
       </section>
       <StatusToast message={toastMessage} />
-      <FloatingAssistant hint="已经很不错了，再调整一下吧" />
+      <FloatingAssistant />
     </main>
   );
 }

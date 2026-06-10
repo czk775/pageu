@@ -55,6 +55,19 @@ export function CreateDraftProvider({ children }) {
           },
         }));
       },
+      updateSkillsInfo(field, value) {
+        setCreateDraft((draft) => ({
+          ...draft,
+          skillsInfo: {
+            ...draft.skillsInfo,
+            [field]: value,
+          },
+          meta: {
+            ...draft.meta,
+            updatedAt: new Date().toISOString(),
+          },
+        }));
+      },
       addExperience() {
         setCreateDraft((draft) => ({
           ...draft,

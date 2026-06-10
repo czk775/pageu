@@ -37,7 +37,7 @@ export function HomePage() {
           </Link>
         </motion.div>
       </section>
-      <FloatingAssistant />
+      <FloatingAssistant hint="准备好开始了吗" />
     </main>
   );
 }

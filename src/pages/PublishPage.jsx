@@ -223,7 +223,7 @@ export function PublishPage() {
         </div>
       </section>
       <StatusToast message={toastMessage} />
-      <FloatingAssistant hint="希望它能帮更多人认识你" />
+      <FloatingAssistant />
     </main>
   );
 }

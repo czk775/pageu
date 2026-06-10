@@ -14,6 +14,7 @@ export function CreatePage() {
     createDraft,
     updateBasicInfo,
     updateJobInfo,
+    updateSkillsInfo,
     addExperience,
     updateExperience,
     toggleExperience,
@@ -38,7 +39,7 @@ export function CreatePage() {
         </header>
 
         <section className="create-block" aria-labelledby="basic-info-title">
-          <h2 id="basic-info-title">认识一下你</h2>
+          <h2 id="basic-info-title">个人基本信息</h2>
           <div className="create-grid basic-grid">
             <FormField id="photo" label="照片">
               <input
@@ -85,7 +86,7 @@ export function CreatePage() {
         </section>
 
         <section className="create-block" aria-labelledby="job-info-title">
-          <h2 id="job-info-title">你想成为谁</h2>
+          <h2 id="job-info-title">岗位信息</h2>
           <FormField id="job-jd" label="岗位 JD">
             <textarea
               id="job-jd"
@@ -117,14 +118,11 @@ export function CreatePage() {
               </select>
             </FormField>
           </div>
-          <button className="secondary-action" type="button">
-            让我理解一下这个岗位
-          </button>
         </section>
 
         <section className="create-block" aria-labelledby="experience-title">
           <div className="block-title-row">
-            <h2 id="experience-title">告诉我你的经历</h2>
+            <h2 id="experience-title">经历信息</h2>
             <p>建议描述：背景、目标、行动、结果</p>
           </div>
 
@@ -177,6 +175,30 @@ export function CreatePage() {
             <Plus size={18} />
             继续添加经历
           </button>
+        </section>
+
+        <section className="create-block" aria-labelledby="skills-title">
+          <h2 id="skills-title">技能证书</h2>
+          <div className="create-grid two-grid">
+            <FormField id="skill-keywords" label="技能关键词">
+              <textarea
+                id="skill-keywords"
+                placeholder="例如：React、Python、Axure、SQL、用户研究"
+                rows={4}
+                value={createDraft.skillsInfo.keywords}
+                onChange={(event) => updateSkillsInfo('keywords', event.target.value)}
+              />
+            </FormField>
+            <FormField id="skill-certificates" label="证书/奖项">
+              <textarea
+                id="skill-certificates"
+                placeholder="例如：英语六级、奖学金、竞赛奖项"
+                rows={4}
+                value={createDraft.skillsInfo.certificates}
+                onChange={(event) => updateSkillsInfo('certificates', event.target.value)}
+              />
+            </FormField>
+          </div>
         </section>
 
         <section className="create-block" aria-labelledby="template-title">

@@ -101,7 +101,7 @@ describe('PageU app shell', () => {
     expect(screen.getByRole('heading', { name: '生成你的个人网站' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '立即创建' })).toHaveAttribute('href', '/create');
     expect(screen.getByText('小U')).toBeInTheDocument();
-    expect(screen.getByText('准备好开始了吗？')).toBeInTheDocument();
+    expect(screen.getByText('准备好开始了吗')).toBeInTheDocument();
   });
 
   it('navigates to the create flow from the landing CTA', async () => {
@@ -116,7 +116,7 @@ describe('PageU app shell', () => {
     await user.click(screen.getByRole('link', { name: '立即创建' }));
 
     expect(screen.getByRole('heading', { level: 1, name: '告诉我你的经历' })).toBeInTheDocument();
-    expect(screen.getByText('认识一下你')).toBeInTheDocument();
+    expect(screen.getByText('个人基本信息')).toBeInTheDocument();
   });
 
   it('renders the full create flow input surface', () => {
@@ -127,16 +127,22 @@ describe('PageU app shell', () => {
     );
 
     expect(screen.getByRole('heading', { level: 1, name: '告诉我你的经历' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: '个人基本信息' })).toBeInTheDocument();
     expect(screen.getByLabelText('照片')).toBeInTheDocument();
     expect(screen.getByLabelText('姓名')).toBeInTheDocument();
     expect(screen.getByLabelText('联系方式')).toBeInTheDocument();
     expect(screen.getByLabelText('学校')).toBeInTheDocument();
     expect(screen.getByLabelText('专业')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: '岗位信息' })).toBeInTheDocument();
     expect(screen.getByLabelText('岗位 JD')).toBeRequired();
     expect(screen.getByLabelText('目标公司')).toBeInTheDocument();
     expect(screen.getByLabelText('求职类型')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '让我理解一下这个岗位' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '让我理解一下这个岗位' })).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: '经历信息' })).toBeInTheDocument();
     expect(screen.getByText('建议描述：背景、目标、行动、结果')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: '技能证书' })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('例如：React、Python、Axure、SQL、用户研究')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('例如：英语六级、奖学金、竞赛奖项')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '生成我的个人网站' })).toBeInTheDocument();
 
     for (const template of ['Neo', 'Pure', 'Flow', 'Grid', 'Canvas', 'Glass']) {
@@ -186,7 +192,7 @@ describe('PageU app shell', () => {
     await user.click(screen.getByRole('radio', { name: 'Flow' }));
 
     await user.click(screen.getByRole('button', { name: '生成我的个人网站' }));
-    expect(await screen.findByRole('heading', { level: 1, name: '这是我对你的理解' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: '分析结果' })).toBeInTheDocument();
 
     await user.click(screen.getByRole('link', { name: 'PageU' }));
     await user.click(screen.getByRole('link', { name: '立即创建' }));
@@ -196,6 +202,29 @@ describe('PageU app shell', () => {
     expect(screen.getByRole('radio', { name: 'Flow' })).toBeChecked();
   });
 
+  it('opens, answers and closes the Xiaou assistant chat', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={['/create']}>
+        <App />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByText('有什么问题可以问我哦')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '打开小U咨询助手' }));
+    expect(screen.getByRole('dialog', { name: '小U咨询助手' })).toBeInTheDocument();
+
+    await user.type(screen.getByPlaceholderText('问问小U，比如：怎么填写经历'), '怎么填写经历');
+    await user.click(screen.getByRole('button', { name: '发送问题' }));
+
+    expect(screen.getByText('建议描述背景、目标、行动、结果，我会帮你整理成适合个人网站展示的内容。')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '关闭小U咨询助手' }));
+    expect(screen.queryByRole('dialog', { name: '小U咨询助手' })).not.toBeInTheDocument();
+  });
+
   it('renders the mock analyze page with four analysis cards', async () => {
     render(
       <MemoryRouter initialEntries={['/analyze']}>
@@ -203,13 +232,14 @@ describe('PageU app shell', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByRole('heading', { level: 1, name: '这是我对你的理解' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: '分析中' })).toBeInTheDocument();
     expect(screen.getByText('小U 正在理解你的经历…')).toBeInTheDocument();
     expect(await screen.findByRole('article', { name: '岗位关键词' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: '分析结果' })).toBeInTheDocument();
     expect(screen.getByRole('article', { name: '能力重点' })).toBeInTheDocument();
     expect(screen.getByRole('article', { name: '推荐展示顺序' })).toBeInTheDocument();
     expect(screen.getByRole('article', { name: '推荐强调经历' })).toBeInTheDocument();
-    expect(screen.getByText('我先帮你整理了一版。')).toBeInTheDocument();
+    expect(screen.getByText('有什么问题可以问我哦')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '返回修改' })).toHaveAttribute('href', '/create');
     expect(screen.getByText('当前使用演示分析结果，真实 AI 暂不可用。')).toBeInTheDocument();
   });
@@ -262,7 +292,7 @@ describe('PageU app shell', () => {
     expect(screen.getByRole('complementary', { name: '模块区' })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: '实时预览' })).toBeInTheDocument();
     expect(screen.getByRole('complementary', { name: '编辑区' })).toBeInTheDocument();
-    expect(screen.getByText('已经很不错了，再调整一下吧')).toBeInTheDocument();
+    expect(screen.getByText('有什么问题可以问我哦')).toBeInTheDocument();
 
     for (const moduleName of ['头像', '个人介绍', '经历', '项目', '技能', '作品', '联系方式']) {
       expect(screen.getByRole('button', { name: `选择${moduleName}` })).toBeInTheDocument();
@@ -318,7 +348,7 @@ describe('PageU app shell', () => {
     expect(screen.getByRole('radio', { name: '公开' })).toBeChecked();
     expect(screen.getByRole('radio', { name: '私密' })).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: '密码访问' })).toBeInTheDocument();
-    expect(screen.getByText('希望它能帮更多人认识你')).toBeInTheDocument();
+    expect(screen.getByText('有什么问题可以问我哦')).toBeInTheDocument();
   });
 
   it('shows toast feedback for copying the site link and downloading the qr code', async () => {

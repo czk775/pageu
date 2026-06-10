@@ -65,6 +65,8 @@ export function AnalyzePage() {
     setAnalysisMessage('已根据你的补充重新整理理解');
   };
 
+  const pageTitle = analysisStatus === 'loading' ? '分析中' : '分析结果';
+
   return (
     <main className="analyze-page">
       <DynamicBackground />
@@ -76,7 +78,7 @@ export function AnalyzePage() {
           <Link className="return-action" to="/create">
             返回修改
           </Link>
-          <h1 id="analyze-title">这是我对你的理解</h1>
+          <h1 id="analyze-title">{pageTitle}</h1>
         </header>
 
         {analysisStatus === 'loading' ? <p className="analysis-loading">小U 正在理解你的经历…</p> : null}
@@ -153,7 +155,7 @@ export function AnalyzePage() {
           </div>
         ) : null}
       </section>
-      <FloatingAssistant hint="我先帮你整理了一版。" />
+      <FloatingAssistant />
     </main>
   );
 }

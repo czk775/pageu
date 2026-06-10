@@ -229,10 +229,19 @@ a {
   position: fixed;
   left: max(18px, env(safe-area-inset-left));
   bottom: max(18px, env(safe-area-inset-bottom));
-  z-index: 3;
+  z-index: 5;
+  display: grid;
+  max-width: min(280px, calc(100vw - 36px));
+  gap: 10px;
+  align-items: end;
+}
+
+.xiaou-trigger {
   display: flex;
+  width: fit-content;
   max-width: min(280px, calc(100vw - 36px));
   align-items: center;
+  justify-self: start;
   gap: 12px;
   border: 1px solid rgba(255, 255, 255, 0.72);
   border-radius: 999px;
@@ -240,6 +249,7 @@ a {
   background: rgba(255, 255, 255, 0.44);
   box-shadow: 0 18px 44px rgba(54, 178, 205, 0.18);
   backdrop-filter: blur(18px);
+  cursor: pointer;
 }
 
 .xiaou-glow {
@@ -265,6 +275,7 @@ a {
   border-radius: 999px;
   background: #17475a;
   box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+  animation: xiaou-wink 5.6s ease-in-out infinite;
 }
 
 .xiaou-eye-left {
@@ -273,6 +284,15 @@ a {
 
 .xiaou-eye-right {
   right: 22px;
+  animation-delay: 2.8s;
+}
+
+.xiaou-wrap:hover .xiaou-eye,
+.xiaou-open .xiaou-eye {
+  height: 6px;
+  border-radius: 999px 999px 50% 50%;
+  transform: translateY(2px) rotate(8deg);
+  animation-duration: 3.4s;
 }
 
 .xiaou-copy {
@@ -294,6 +314,104 @@ a {
   font-weight: 700;
   line-height: 1.25;
   white-space: nowrap;
+}
+
+.xiaou-chat {
+  width: min(330px, calc(100vw - 36px));
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  border-radius: 8px;
+  padding: 14px;
+  background:
+    radial-gradient(circle at 16% 0%, rgba(119, 231, 255, 0.26), transparent 36%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(235, 253, 255, 0.72));
+  box-shadow: 0 24px 70px rgba(54, 178, 205, 0.22);
+  backdrop-filter: blur(20px);
+}
+
+.xiaou-chat-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.xiaou-chat-head span {
+  color: #126276;
+  font-weight: 950;
+}
+
+.xiaou-chat-head button,
+.xiaou-chat-form button {
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+.xiaou-chat-head button {
+  display: inline-grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 999px;
+  color: #126276;
+  font-size: 20px;
+  font-weight: 900;
+  background: rgba(231, 253, 255, 0.82);
+}
+
+.xiaou-chat p {
+  margin: 10px 0;
+  color: #2b7180;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.55;
+}
+
+.xiaou-answer {
+  margin: 10px 0;
+  border: 1px solid rgba(83, 209, 220, 0.22);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #12384c;
+  background: rgba(255, 255, 255, 0.68);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.55;
+}
+
+.xiaou-chat-form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.xiaou-chat-form input {
+  min-width: 0;
+  min-height: 42px;
+  border: 1px solid rgba(55, 181, 211, 0.24);
+  border-radius: 999px;
+  padding: 0 14px;
+  color: #12384c;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.xiaou-chat-form input:focus {
+  border-color: rgba(34, 197, 219, 0.8);
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(66, 211, 223, 0.16);
+}
+
+.xiaou-chat-form button {
+  min-height: 42px;
+  border-radius: 999px;
+  padding: 0 14px;
+  color: white;
+  font-size: 13px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #1bb6e9, #27d9ba);
 }
 
 .placeholder-content {
@@ -1772,6 +1890,7 @@ a {
   min-height: 132px;
   gap: 10px;
   align-content: end;
+  overflow: hidden;
   border: 1px solid rgba(68, 199, 221, 0.24);
   border-radius: 8px;
   padding: 18px;
@@ -1793,18 +1912,134 @@ a {
   width: 18px;
   height: 18px;
   accent-color: #22c9d2;
+  z-index: 2;
 }
 
 .template-card span {
+  position: relative;
+  z-index: 1;
   font-size: 24px;
   line-height: 1;
   font-weight: 900;
 }
 
 .template-card small {
+  position: relative;
+  z-index: 1;
   color: #3c7c8e;
   font-size: 13px;
   font-weight: 900;
+}
+
+.template-preview {
+  position: absolute;
+  inset: 12px 42px auto 14px;
+  display: grid;
+  height: 48px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+  opacity: 0.9;
+}
+
+.template-preview i {
+  display: block;
+  min-width: 0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.62);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+}
+
+.template-card-neo {
+  border-color: rgba(76, 185, 255, 0.32);
+  background:
+    radial-gradient(circle at 18% 12%, rgba(103, 238, 210, 0.58), transparent 30%),
+    linear-gradient(135deg, rgba(236, 246, 255, 0.92), rgba(157, 169, 255, 0.3) 46%, rgba(105, 232, 215, 0.55));
+}
+
+.template-card-neo .template-preview i {
+  background: linear-gradient(135deg, rgba(33, 181, 239, 0.88), rgba(104, 236, 197, 0.82));
+}
+
+.template-card-pure {
+  color: #1f2933;
+  border-color: rgba(31, 41, 51, 0.18);
+  background:
+    linear-gradient(90deg, rgba(31, 41, 51, 0.08) 1px, transparent 1px),
+    linear-gradient(180deg, #ffffff, #f3f5f7);
+  background-size: 34px 34px, auto;
+}
+
+.template-card-pure .template-preview i {
+  border: 1px solid rgba(31, 41, 51, 0.18);
+  background: #ffffff;
+}
+
+.template-card-flow {
+  border-color: rgba(178, 134, 245, 0.26);
+  background:
+    radial-gradient(ellipse at 20% 18%, rgba(255, 179, 222, 0.38), transparent 34%),
+    radial-gradient(ellipse at 74% 18%, rgba(129, 207, 255, 0.38), transparent 38%),
+    linear-gradient(135deg, rgba(255, 250, 255, 0.92), rgba(239, 239, 255, 0.84));
+}
+
+.template-card-flow .template-preview {
+  transform: skewX(-10deg);
+}
+
+.template-card-flow .template-preview i {
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(246, 152, 214, 0.72), rgba(133, 204, 255, 0.72));
+}
+
+.template-card-grid {
+  border-color: rgba(38, 77, 93, 0.26);
+  background:
+    linear-gradient(rgba(38, 77, 93, 0.16) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(38, 77, 93, 0.16) 1px, transparent 1px),
+    linear-gradient(135deg, rgba(250, 254, 255, 0.95), rgba(230, 244, 249, 0.88));
+  background-size: 22px 22px, 22px 22px, auto;
+}
+
+.template-card-grid .template-preview {
+  grid-template-columns: 1fr 1fr;
+}
+
+.template-card-grid .template-preview i {
+  border: 1px solid rgba(38, 77, 93, 0.2);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.template-card-canvas {
+  border-color: rgba(244, 154, 92, 0.3);
+  background:
+    radial-gradient(circle at 18% 20%, rgba(255, 183, 94, 0.46), transparent 28%),
+    radial-gradient(circle at 82% 18%, rgba(84, 219, 197, 0.38), transparent 30%),
+    linear-gradient(135deg, rgba(255, 252, 245, 0.94), rgba(255, 232, 205, 0.7));
+}
+
+.template-card-canvas .template-preview i {
+  border-radius: 14px 6px 14px 6px;
+  background: linear-gradient(135deg, rgba(255, 164, 85, 0.82), rgba(65, 208, 197, 0.74));
+}
+
+.template-card-canvas .template-preview i:nth-child(2) {
+  transform: translateY(8px) rotate(-5deg);
+}
+
+.template-card-glass {
+  border-color: rgba(255, 255, 255, 0.78);
+  background:
+    radial-gradient(circle at 22% 16%, rgba(142, 233, 255, 0.55), transparent 32%),
+    radial-gradient(circle at 78% 22%, rgba(105, 236, 198, 0.46), transparent 30%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.55), rgba(225, 252, 255, 0.48));
+  backdrop-filter: blur(18px);
+}
+
+.template-card-glass .template-preview i {
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.42);
+  box-shadow: 0 12px 30px rgba(85, 194, 216, 0.18);
 }
 
 .template-card:has(input:checked) {
@@ -1910,6 +2145,18 @@ a {
   }
   50% {
     transform: translateY(-6px);
+  }
+}
+
+@keyframes xiaou-wink {
+  0%,
+  86%,
+  100% {
+    transform: scaleY(1);
+  }
+  90%,
+  94% {
+    transform: scaleY(0.18);
   }
 }
 
