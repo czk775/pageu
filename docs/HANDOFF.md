@@ -278,6 +278,12 @@ Phase 7.6：
 feat: enhance assistant interaction and create flow polish
 ```
 
+Phase 7.7：
+
+```text
+fix: reset assistant chat and new site draft state
+```
+
 ## 16. Phase 7.6 完成内容
 
 - 在不改变主流程和路由的前提下，升级小U为轻量悬浮咨询助手。
@@ -434,4 +440,106 @@ npm run build: success
 
 ```text
 answers Xiaou questions through the AI assistant service with mock fallback in tests
+```
+
+## 24. Phase 7.7 修复内容
+
+- 修复小U聊天框关闭后再次打开仍保留上一轮回答的问题。
+- 小U关闭聊天框时会清空：
+  - 当前输入问题
+  - 本轮回答内容
+  - AI/fallback meta
+  - loading 状态
+- 小U聊天框打开时显示默认引导：
+  - `可以问我怎么填写经历、JD 是什么、模板怎么选。`
+- 发布页 `/publish` 增加次级入口：`创建新的个人网站`。
+- 最终网站页 `/site/:id` 增加弱化的次级入口：`创建新的个人网站`。
+- 点击新建入口后主动清空 PageU 本地草稿并跳转 `/create`。
+- 未改变首页 → 创建 → 分析 → 编辑 → 发布 → 最终网站主流程。
+
+## 25. 小U聊天历史清理策略
+
+- 小U仍然是轻量悬浮助手，不作为正式客服系统保存历史。
+- `FloatingAssistant` 的聊天状态只保存在组件内存中，不写入 localStorage。
+- 点击 `关闭小U咨询助手` 时执行本地状态重置：
+  - `question` 置空
+  - `answer` 置空
+  - `assistantMeta` 置空
+  - `chatStatus` 回到 `idle`
+  - `chatOpen` 关闭
+- 不影响真实 AI 问答能力；下次打开后仍可重新调用 `answerAssistantQuestion`。
+- 不影响 mock/fallback；接口不可用时仍会走本地规则回答。
+
+## 26. 新建个人网站状态重置策略
+
+新增工具函数：
+
+```js
+resetPageUState()
+```
+
+位置：
+
+```text
+src/lib/storage.js
+```
+
+当前清理的 key：
+
+```text
+pageu:createDraft
+pageu.createDraft
+pageu.siteDraft
+pageu.publish
+pageu.analysisResult
+```
+
+Context 新增方法：
+
+```js
+resetDraft()
+```
+
+位置：
+
+```text
+src/state/CreateDraftContext.jsx
+```
+
+行为：
+
+1. 调用 `resetPageUState()` 清理本地缓存。
+2. 调用 `resetDraft()` 将 Context 中的 `createDraft` 恢复为 `createInitialDraft()`。
+3. 跳转 `/create`。
+
+注意：
+
+- 不会在每次进入 `/create` 时自动清空，避免误删正在编辑的内容。
+- 只有用户主动点击 `创建新的个人网站` 才会重置。
+
+## 27. Phase 7.7 新增/修改文件
+
+- `src/App.test.jsx`
+- `src/components/FloatingAssistant.jsx`
+- `src/lib/storage.js`
+- `src/pages/GeneratedSitePage.jsx`
+- `src/pages/PublishPage.jsx`
+- `src/state/CreateDraftContext.jsx`
+- `src/styles.css`
+- `docs/HANDOFF.md`
+
+## 28. Phase 7.7 测试结果
+
+新增/更新测试覆盖：
+
+- 小U聊天框关闭后再次打开，不保留上一轮回答。
+- 点击发布页 `创建新的个人网站` 后，`createDraft` 恢复默认空状态。
+- 点击新建入口后，`pageu.siteDraft` 与 `pageu.publish` 被清理。
+- 最终网站页也可点击 `创建新的个人网站` 回到空白创建页。
+- 旧流程继续可用。
+
+最近一次阶段内测试：
+
+```text
+npm test -- --run src/App.test.jsx: 24 tests passed
 ```

@@ -1317,6 +1317,31 @@ a {
   text-align: center;
 }
 
+.generated-new-site-action {
+  position: fixed;
+  right: max(18px, env(safe-area-inset-right));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  z-index: 4;
+  min-height: 42px;
+  border: 1px solid rgba(74, 181, 203, 0.26);
+  border-radius: 999px;
+  padding: 0 16px;
+  color: #126276;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 900;
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 12px 32px rgba(43, 144, 170, 0.14);
+  backdrop-filter: blur(18px);
+  cursor: pointer;
+}
+
+.generated-new-site-action:hover,
+.generated-new-site-action:focus-visible {
+  transform: translateY(-2px);
+  outline: none;
+}
+
 .template-neo-site .generated-hero {
   grid-template-columns: 0.42fr 1fr;
   background:

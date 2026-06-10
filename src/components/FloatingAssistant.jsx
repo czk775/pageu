@@ -44,6 +44,14 @@ export function FloatingAssistant({ hint = '有什么问题可以问我哦' }) {
     setChatStatus('idle');
   };
 
+  const handleCloseChat = () => {
+    setChatOpen(false);
+    setQuestion('');
+    setAnswer('');
+    setAssistantMeta(null);
+    setChatStatus('idle');
+  };
+
   return (
     <motion.aside
       className={`xiaou-wrap ${chatOpen ? 'xiaou-open' : ''}`}
@@ -65,10 +73,11 @@ export function FloatingAssistant({ hint = '有什么问题可以问我哦' }) {
         >
           <div className="xiaou-chat-head">
             <span>小U</span>
-            <button type="button" aria-label="关闭小U咨询助手" onClick={() => setChatOpen(false)}>
+            <button type="button" aria-label="关闭小U咨询助手" onClick={handleCloseChat}>
               ×
             </button>
           </div>
+          <p>可以问我怎么填写经历、JD 是什么、模板怎么选。</p>
           <p>{pageGuide}</p>
           {chatStatus === 'loading' ? <div className="xiaou-answer" role="status">小U 正在思考…</div> : null}
           {answer ? (

@@ -1,5 +1,6 @@
 import { createPublishDraft, normalizePublishDraft, PUBLISH_STORAGE_KEY } from '../types/publishDraft';
 import { normalizeSiteDraft, SITE_DRAFT_STORAGE_KEY } from '../types/siteDraft';
+import { DRAFT_STORAGE_KEY } from '../types/createDraft';
 
 export const PUBLIC_SITE_PATH = '/site/demo';
 
@@ -40,3 +41,17 @@ export const savePublishDraft = (publishDraft) =>
   );
 
 export const toSvgDataUrl = (svg) => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+
+export const resetPageUState = () => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  [
+    DRAFT_STORAGE_KEY,
+    'pageu.createDraft',
+    SITE_DRAFT_STORAGE_KEY,
+    PUBLISH_STORAGE_KEY,
+    'pageu.analysisResult',
+  ].forEach((key) => window.localStorage.removeItem(key));
+};

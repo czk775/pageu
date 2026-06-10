@@ -8,7 +8,7 @@ import { GlassCard } from '../components/GlassCard';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { StatusToast } from '../components/StatusToast';
 import { generateSiteDraft } from '../lib/draftGenerator';
-import { loadPublishDraft, loadSiteDraft, PUBLIC_SITE_PATH, savePublishDraft, toSvgDataUrl } from '../lib/storage';
+import { loadPublishDraft, loadSiteDraft, PUBLIC_SITE_PATH, resetPageUState, savePublishDraft, toSvgDataUrl } from '../lib/storage';
 import { TemplateRenderer } from '../renderers/TemplateRenderer';
 import { useCreateDraft } from '../state/CreateDraftContext';
 import { createAnalysisResult } from '../types/analysisResult';
@@ -16,7 +16,7 @@ import { createPublishDraft, PUBLISH_STORAGE_KEY } from '../types/publishDraft';
 
 export function PublishPage() {
   const navigate = useNavigate();
-  const { createDraft } = useCreateDraft();
+  const { createDraft, resetDraft } = useCreateDraft();
   const analysisResult = useMemo(() => createAnalysisResult(createDraft), [createDraft]);
   const generatedDraft = useMemo(() => generateSiteDraft(createDraft, analysisResult), [analysisResult, createDraft]);
   const siteDraft = useMemo(() => loadSiteDraft(generatedDraft), [generatedDraft]);
@@ -94,6 +94,12 @@ export function PublishPage() {
       ),
     );
     navigate(PUBLIC_SITE_PATH);
+  };
+
+  const handleCreateNewSite = () => {
+    resetPageUState();
+    resetDraft();
+    navigate('/create');
   };
 
   return (
@@ -220,6 +226,9 @@ export function PublishPage() {
           <Link className="return-action" to="/editor">
             继续编辑
           </Link>
+          <button className="return-action" type="button" onClick={handleCreateNewSite}>
+            创建新的个人网站
+          </button>
         </div>
       </section>
       <StatusToast message={toastMessage} />

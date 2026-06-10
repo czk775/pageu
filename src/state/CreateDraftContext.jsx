@@ -128,6 +128,9 @@ export function CreateDraftProvider({ children }) {
           },
         }));
       },
+      resetDraft() {
+        setCreateDraft(createInitialDraft());
+      },
     }),
     [],
   );
