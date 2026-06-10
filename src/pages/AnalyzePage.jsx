@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Brain, Highlighter, ListChecks, RotateCcw, Tags } from 'lucide-react';
 import { DynamicBackground } from '../components/DynamicBackground';
@@ -6,8 +6,8 @@ import { FloatingAssistant } from '../components/FloatingAssistant';
 import { GlassCard } from '../components/GlassCard';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { StatusToast } from '../components/StatusToast';
+import { analyzeCareerDraft } from '../services/ai/aiClient';
 import { useCreateDraft } from '../state/CreateDraftContext';
-import { createAnalysisResult } from '../types/analysisResult';
 
 function AnalysisCard({ icon: Icon, title, children }) {
   return (
@@ -29,13 +29,39 @@ export function AnalyzePage() {
   const [adjustmentOpen, setAdjustmentOpen] = useState(false);
   const [userAdjustment, setUserAdjustment] = useState('');
   const [analysisMessage, setAnalysisMessage] = useState('');
+  const [analysisResult, setAnalysisResult] = useState(null);
+  const [analysisStatus, setAnalysisStatus] = useState('loading');
 
-  const analysisResult = useMemo(
-    () => createAnalysisResult(createDraft, userAdjustment),
-    [createDraft, userAdjustment],
-  );
+  const runAnalysis = async (adjustment = '') => {
+    setAnalysisStatus('loading');
+    setAnalysisMessage('');
+    const result = await analyzeCareerDraft(createDraft, adjustment);
+    setAnalysisResult(result);
+    setAnalysisStatus(result.meta?.fallback ? 'fallback' : 'success');
+    return result;
+  };
 
-  const handleReanalyze = () => {
+  useEffect(() => {
+    let active = true;
+
+    setAnalysisStatus('loading');
+    setAnalysisMessage('');
+    analyzeCareerDraft(createDraft, '').then((result) => {
+      if (!active) {
+        return;
+      }
+
+      setAnalysisResult(result);
+      setAnalysisStatus(result.meta?.fallback ? 'fallback' : 'success');
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [createDraft]);
+
+  const handleReanalyze = async () => {
+    await runAnalysis(userAdjustment);
     setAnalysisMessage('已根据你的补充重新整理理解');
   };
 
@@ -53,42 +79,50 @@ export function AnalyzePage() {
           <h1 id="analyze-title">这是我对你的理解</h1>
         </header>
 
-        <div className="analysis-grid">
-          <AnalysisCard icon={Tags} title="岗位关键词">
-            <div className="analysis-tags">
-              {analysisResult.jobKeywords.map((keyword) => (
-                <span key={keyword}>{keyword}</span>
-              ))}
-            </div>
-          </AnalysisCard>
+        {analysisStatus === 'loading' ? <p className="analysis-loading">小U 正在理解你的经历…</p> : null}
 
-          <AnalysisCard icon={Brain} title="能力重点">
-            <div className="analysis-tags focus-tags">
-              {analysisResult.abilityFocus.map((ability) => (
-                <span key={ability}>{ability}</span>
-              ))}
-            </div>
-          </AnalysisCard>
+        {analysisResult ? (
+          <div className="analysis-grid">
+            <AnalysisCard icon={Tags} title="岗位关键词">
+              <div className="analysis-tags">
+                {analysisResult.jobKeywords.map((keyword) => (
+                  <span key={keyword}>{keyword}</span>
+                ))}
+              </div>
+            </AnalysisCard>
 
-          <AnalysisCard icon={ListChecks} title="推荐展示顺序">
-            <ol className="analysis-order">
-              {analysisResult.displayOrder.map((item, index) => (
-                <li key={`${item}-${index}`}>
-                  <span>{index + 1}</span>
-                  {item}
-                </li>
-              ))}
-            </ol>
-          </AnalysisCard>
+            <AnalysisCard icon={Brain} title="能力重点">
+              <div className="analysis-tags focus-tags">
+                {analysisResult.abilityFocus.map((ability) => (
+                  <span key={ability}>{ability}</span>
+                ))}
+              </div>
+            </AnalysisCard>
 
-          <AnalysisCard icon={Highlighter} title="推荐强调经历">
-            <ul className="analysis-list">
-              {analysisResult.highlightedExperiences.map((experience) => (
-                <li key={experience}>{experience}</li>
-              ))}
-            </ul>
-          </AnalysisCard>
-        </div>
+            <AnalysisCard icon={ListChecks} title="推荐展示顺序">
+              <ol className="analysis-order">
+                {analysisResult.displayOrder.map((item, index) => (
+                  <li key={`${item}-${index}`}>
+                    <span>{index + 1}</span>
+                    {item}
+                  </li>
+                ))}
+              </ol>
+            </AnalysisCard>
+
+            <AnalysisCard icon={Highlighter} title="推荐强调经历">
+              <ul className="analysis-list">
+                {analysisResult.highlightedExperiences.map((experience) => (
+                  <li key={experience}>{experience}</li>
+                ))}
+              </ul>
+            </AnalysisCard>
+          </div>
+        ) : null}
+
+        {analysisStatus === 'fallback' ? (
+          <p className="analysis-fallback-note">当前使用演示分析结果，真实 AI 暂不可用。</p>
+        ) : null}
 
         <div className="analyze-actions">
           <PrimaryButton icon={ArrowRight} onClick={() => navigate('/editor')}>

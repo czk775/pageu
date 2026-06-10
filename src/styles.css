@@ -1452,6 +1452,31 @@ a {
   gap: 18px;
 }
 
+.analysis-loading,
+.analysis-fallback-note {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  width: fit-content;
+  min-height: 42px;
+  align-items: center;
+  margin: 0;
+  padding: 0 16px;
+  border: 1px solid rgba(74, 181, 203, 0.28);
+  border-radius: 999px;
+  color: #126276;
+  background: rgba(255, 255, 255, 0.68);
+  box-shadow: 0 16px 44px rgba(43, 144, 170, 0.12);
+  font-size: 14px;
+  font-weight: 900;
+  backdrop-filter: blur(18px);
+}
+
+.analysis-fallback-note {
+  color: #7a5b13;
+  background: rgba(255, 250, 229, 0.76);
+}
+
 .analysis-card {
   position: relative;
   display: grid;
