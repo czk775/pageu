@@ -543,3 +543,208 @@ src/state/CreateDraftContext.jsx
 ```text
 npm test -- --run src/App.test.jsx: 24 tests passed
 ```
+
+## 29. Phase 8 完成内容
+
+Phase 8 将 PageU 的最终生成物从“网页简历”升级为更像真实个人网站的作品集页面，同时修复了用户在创建页输入信息后，分析确认进入编辑器却仍显示默认占位内容的问题。
+
+本阶段完成：
+- 扩展创建页输入结构，补充个人标签、求职动机、经历角色、经历时间、项目链接、作品链接和网站风格偏好。
+- 扩展 `createDraft` 与 `siteDraft`，让用户输入的信息可以稳定进入编辑器预览、发布页和 `/site/:id` 最终个人网站。
+- 重构 `draftGenerator`，从用户资料、岗位信息、经历、技能证书、作品链接和 AI 分析结果中编排个人网站内容。
+- 重构 `TemplateRenderer`，六个模板不再只是换色，而是使用明显不同的布局结构。
+- 编辑器中间预览改为复用最终网站渲染器，避免编辑器预览和最终网站割裂。
+- 保留原有主流程：首页 → 创建 → 分析 → 编辑 → 发布 → 最终网站。
+
+## 30. 为什么重构生成物
+
+之前最终页面更接近“把简历搬到网页上”，核心问题是：
+- 用户输入的信息展示不充分。
+- 项目、作品、技能、联系方式之间缺少个人网站的叙事层次。
+- 六个模板差异主要停留在视觉色彩，不能体现不同风格的网站结构。
+- 编辑器预览与最终生成站点的呈现方式不够一致。
+
+本阶段改为“个人网站 / Portfolio”思路：首屏突出个人定位，正文突出项目与经历故事，再补充技能、证书、作品和联系方式。
+
+## 31. 新的创建页输入结构
+
+创建页仍为单页滚动，新增和调整后的关键输入包括：
+- 个人基本信息：照片、姓名、联系方式、学校、专业、个人标签 / 一句话定位。
+- 岗位信息：岗位 JD、目标公司、求职类型、为什么想做这个岗位。
+- 经历信息：经历标题、我的角色、时间 / 阶段、项目 / 作品链接、自由描述。
+- 技能证书：技能关键词、证书 / 奖项。
+- 作品 / 项目链接：支持用 textarea 粘贴多个作品、作品集、GitHub、Figma、Notion 或项目链接。
+- 主页风格：Neo、Pure、Flow、Grid、Canvas、Glass。
+- 网站观感偏好：专业可信、科技未来、创意表达、温暖亲和、极简高级。
+
+## 32. 新 createDraft 字段
+
+新增或扩展字段：
+
+```js
+createDraft = {
+  basicInfo: {
+    personalTagline: '',
+  },
+  jobInfo: {
+    motivation: '',
+  },
+  experiences: [
+    {
+      role: '',
+      period: '',
+      link: '',
+    },
+  ],
+  worksInfo: {
+    rawLinks: '',
+  },
+  stylePreference: '',
+};
+```
+
+兼容策略：
+- `normalizeDraft` 会为旧草稿补齐缺失字段。
+- 旧 localStorage 中没有这些字段时不会报错。
+- 旧的 `skillsInfo`、`template`、`experiences` 结构继续可用。
+
+## 33. 新 siteDraft 结构
+
+`siteDraft` 现在更接近个人网站内容模型：
+
+```js
+siteDraft = {
+  profile: {},
+  hero: {},
+  highlights: [],
+  projects: [],
+  experienceStory: {},
+  skills: [],
+  certificates: [],
+  works: [],
+  contact: {},
+  sections: [],
+  theme: {},
+  template: '',
+  stylePreference: '',
+  meta: {},
+};
+```
+
+说明：
+- `hero` 用于最终网站首屏。
+- `projects` 用于重点项目展示。
+- `works` 用于外部作品链接展示。
+- `experienceStory` 用于把经历内容组织成更完整的个人成长 / 项目叙事。
+- `sections` 保留给编辑器模块列表兼容使用。
+
+## 34. draftGenerator 内容编排策略
+
+`src/lib/draftGenerator.js` 负责从 `createDraft + analysisResult` 派生 `siteDraft`。
+
+当前策略：
+- 优先使用用户填写的姓名、目标岗位、个人标签和求职动机生成首屏。
+- 优先把用户填写的经历转为重点项目，不再只显示默认“校园项目经历”。
+- 从经历描述中提取摘要，并结合角色、时间、链接生成项目卡片。
+- 从 `skillsInfo.keywords` 生成技能标签。
+- 从 `skillsInfo.certificates` 生成证书 / 奖项内容。
+- 从 `worksInfo.rawLinks` 与经历链接生成作品链接。
+- 从 `analysisResult.abilityFocus` 和 `jobKeywords` 补充展示重点，但不替代用户输入。
+- 不编造不存在的具体项目链接。
+
+## 35. 六个模板设计提示词
+
+模板数据维护在 `src/data/templates.js`，每个模板包含 `designPrompt`、`palette`、`layoutIntent` 和 `personality`。
+
+- Neo：现代科技感、渐变、发光、AI 产品感。
+- Pure：极简、高级、留白、黑白灰。
+- Flow：柔和流动、杂志感、适合表达型经历。
+- Grid：模块化、理性、结构清晰、适合工程与产品项目。
+- Canvas：创意画布、自由排布、适合作品与设计表达。
+- Glass：玻璃拟态、透明感、浅蓝青绿、柔和未来感。
+
+## 36. TemplateRenderer 六模板差异
+
+`src/renderers/TemplateRenderer.jsx` 负责根据 `siteDraft.template` 渲染最终网站。
+
+六个模板的结构差异：
+- Neo：科技首屏、漂浮亮点、项目 showcase、发光技能标签。
+- Pure：单栏留白、关于我优先、案例式项目卡片、极简作品列表。
+- Flow：左右分栏首屏、叙事流线、杂志式作品区。
+- Grid：仪表盘式首屏、网格项目矩阵、模块边界更清晰。
+- Canvas：作品优先、展览式项目排布、自由画布感。
+- Glass：玻璃卡片首屏、透明高光、柔和分层内容块。
+
+## 37. 作品 / 项目链接输入说明
+
+创建页新增 `作品 / 项目链接` textarea。
+
+建议用户每行放一个链接或作品说明，例如：
+```text
+GitHub: https://github.com/xxx
+作品集: https://notion.site/xxx
+项目演示: https://example.com
+```
+
+生成逻辑：
+- 有链接时，最终网站展示 `查看作品` 或 `查看项目` 按钮。
+- 作品链接会进入 `siteDraft.works`。
+- 经历卡片中的项目链接会进入对应项目卡片。
+- 如果没有链接，不展示假的链接按钮。
+
+## 38. 编辑器 / 发布页适配说明
+
+- 编辑器中间预览已复用 `TemplateRenderer`，用户在编辑器看到的页面风格更接近最终网站。
+- 编辑器仍保留三栏结构，不扩展完整网站编辑器功能。
+- 发布页继续读取 `pageu.siteDraft`，预览内容会自动使用新的 `siteDraft` 结构。
+- `/site/:id` 不展示编辑器控件，只展示真实个人网站。
+
+## 39. 当前未完成
+
+- 还没有实现真正的自由拖拽式网站搭建器。
+- 还没有把每个模板拆成可独立配置的模板包。
+- 编辑器右侧暂未覆盖所有新增字段的精细编辑。
+- 没有真实发布、后端、登录、数据库和部署能力。
+- AI 仍只做分析，不直接生成完整网页代码。
+
+## 40. 未来 Agentic Site Builder 扩展说明
+
+后续可在当前结构上扩展 Agentic Site Builder：
+- 让 AI 先输出结构化 `siteDraft`，而不是直接输出网页代码。
+- 将 `TemplateRenderer` 拆成可插拔模板系统。
+- 增加模块级编辑、模块重排、内容重写和版本回滚。
+- 将 AI 调用迁移到后端或 Serverless，避免前端暴露 Key。
+- 引入发布服务，将 `siteDraft + template` 生成可访问的真实站点。
+
+## 41. Phase 8 测试结果
+
+已执行：
+
+```bash
+npm run test
+npm run build
+```
+
+结果：
+
+```text
+npm run test: 29 tests passed
+npm run build: success
+```
+
+额外本地冒烟：
+
+```text
+http://127.0.0.1:5174/site/demo
+StatusCode=200
+ContainsPageU=True
+ContainsRoot=True
+```
+
+说明：自动化浏览器依赖 `playwright` 当前未安装，因此未做截图级浏览器自动化验收；已通过 Vitest、生产构建和本地 HTTP 冒烟验证。
+
+## 42. Phase 8 commit 信息
+
+```text
+feat: rebuild generated output as portfolio website
+```

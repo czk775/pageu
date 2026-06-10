@@ -31,6 +31,8 @@ export const createSection = (type, overrides = {}) => ({
   ...overrides,
 });
 
+const normalizeArray = (value) => (Array.isArray(value) ? value : []);
+
 export const normalizeSiteDraft = (siteDraft) => {
   if (!siteDraft || typeof siteDraft !== 'object') {
     return null;
@@ -43,7 +45,32 @@ export const normalizeSiteDraft = (siteDraft) => {
       headline: '',
       intro: '',
       contact: '',
+      school: '',
+      major: '',
+      photoName: '',
+      personalTagline: '',
       ...siteDraft.profile,
+    },
+    hero: {
+      eyebrow: '',
+      title: '',
+      subtitle: '',
+      primaryCta: '查看项目',
+      secondaryCta: '联系我',
+      ...siteDraft.hero,
+    },
+    highlights: normalizeArray(siteDraft.highlights),
+    projects: normalizeArray(siteDraft.projects),
+    experienceStory: normalizeArray(siteDraft.experienceStory),
+    skills: normalizeArray(siteDraft.skills),
+    certificates: normalizeArray(siteDraft.certificates),
+    works: normalizeArray(siteDraft.works),
+    contact: {
+      email: '',
+      phone: '',
+      links: [],
+      ...siteDraft.contact,
+      links: normalizeArray(siteDraft.contact?.links),
     },
     sections: Array.isArray(siteDraft.sections)
       ? siteDraft.sections.map((section) => ({
@@ -58,6 +85,7 @@ export const normalizeSiteDraft = (siteDraft) => {
       ...siteDraft.theme,
     },
     template: siteDraft.template || 'neo',
+    stylePreference: siteDraft.stylePreference || '',
     meta: {
       version: 1,
       updatedAt: null,

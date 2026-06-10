@@ -4,14 +4,35 @@ import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
 import App from './App';
 import { generateSiteDraft } from './lib/draftGenerator';
+import { TemplateRenderer } from './renderers/TemplateRenderer';
 import { analyzeCareerDraft, normalizeAnalysisPayload } from './services/ai/aiClient';
 import { answerAssistantQuestion } from './services/ai/assistantChat';
 import { createAnalysisResult } from './types/analysisResult';
-import { createInitialDraft, DRAFT_STORAGE_KEY } from './types/createDraft';
+import { createInitialDraft, DRAFT_STORAGE_KEY, normalizeDraft } from './types/createDraft';
 import { PUBLISH_STORAGE_KEY } from './types/publishDraft';
 import { SITE_DRAFT_STORAGE_KEY } from './types/siteDraft';
 
 describe('siteDraft generation', () => {
+  it('normalizes Phase 8 createDraft portfolio fields for old and new drafts', () => {
+    const normalized = normalizeDraft({
+      basicInfo: { name: '陈一诺', personalTagline: 'AI产品｜用户研究｜把想法做成产品' },
+      jobInfo: { jd: '产品经理实习生', motivation: '希望连接用户问题与 AI 能力。' },
+      experiences: [{ id: 'legacy', title: 'PageU 项目', description: '做了创建流程。' }],
+      worksInfo: { rawLinks: 'PageU Demo | https://example.com | AI个人网站生成器' },
+      stylePreference: '科技未来',
+    });
+
+    expect(normalized.basicInfo.personalTagline).toBe('AI产品｜用户研究｜把想法做成产品');
+    expect(normalized.jobInfo.motivation).toBe('希望连接用户问题与 AI 能力。');
+    expect(normalized.experiences[0]).toMatchObject({
+      role: '',
+      period: '',
+      link: '',
+    });
+    expect(normalized.worksInfo.rawLinks).toContain('PageU Demo');
+    expect(normalized.stylePreference).toBe('科技未来');
+  });
+
   it('derives a siteDraft from createDraft and analysisResult', () => {
     const createDraft = createInitialDraft();
     createDraft.basicInfo.name = '林小雨';
@@ -43,6 +64,86 @@ describe('siteDraft generation', () => {
       'contact',
     ]);
     expect(siteDraft.sections.find((section) => section.type === 'experience').items[0].title).toBe('校园招聘小程序');
+  });
+
+  it('generates portfolio website data with hero, projects and works', () => {
+    const createDraft = createInitialDraft();
+    createDraft.basicInfo.name = '陈一诺';
+    createDraft.basicInfo.school = '南山大学';
+    createDraft.basicInfo.major = '数字媒体技术';
+    createDraft.basicInfo.personalTagline = 'AI产品｜用户研究｜把想法做成产品';
+    createDraft.jobInfo.jd = '用户体验设计实习生，负责用户研究和原型设计。';
+    createDraft.jobInfo.motivation = '希望把用户问题转化为可以落地的 AI 产品体验。';
+    createDraft.experiences = [
+      {
+        id: 'experience-ai',
+        title: 'AI 简历优化项目',
+        role: '产品设计负责人',
+        period: '2025.09 - 2025.12',
+        description: '调研同学求职痛点，设计简历分析和建议生成流程，完成可演示原型。',
+        link: 'https://example.com/demo',
+        collapsed: false,
+      },
+    ];
+    createDraft.skillsInfo.keywords = 'React、Python、用户研究、Axure';
+    createDraft.skillsInfo.certificates = '英语六级、校级奖学金';
+    createDraft.worksInfo.rawLinks = 'PageU Demo | https://pageu.example.com | AI个人网站生成器';
+    createDraft.stylePreference = '科技未来';
+
+    const siteDraft = generateSiteDraft(createDraft, createAnalysisResult(createDraft));
+
+    expect(siteDraft.profile.personalTagline).toBe('AI产品｜用户研究｜把想法做成产品');
+    expect(siteDraft.hero).toMatchObject({
+      title: '陈一诺',
+      primaryCta: '查看项目',
+      secondaryCta: '联系我',
+    });
+    expect(siteDraft.hero.subtitle).toBe('AI产品｜用户研究｜把想法做成产品');
+    expect(siteDraft.highlights).toHaveLength(3);
+    expect(siteDraft.projects[0]).toMatchObject({
+      title: 'AI 简历优化项目',
+      role: '产品设计负责人',
+      period: '2025.09 - 2025.12',
+      link: 'https://example.com/demo',
+    });
+    expect(siteDraft.projects[0].summary).not.toBe(createDraft.experiences[0].description);
+    expect(siteDraft.projects[0].tags.length).toBeGreaterThanOrEqual(3);
+    expect(siteDraft.works).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: 'PageU Demo',
+          url: 'https://pageu.example.com',
+        }),
+        expect.objectContaining({
+          title: 'AI 简历优化项目',
+          url: 'https://example.com/demo',
+        }),
+      ]),
+    );
+    expect(siteDraft.skills).toEqual(expect.arrayContaining(['React', 'Python', '用户研究', 'Axure']));
+    expect(siteDraft.certificates).toEqual(expect.arrayContaining(['英语六级', '校级奖学金']));
+  });
+
+  it('renders works links and distinct template structures in TemplateRenderer', () => {
+    const createDraft = createInitialDraft();
+    createDraft.basicInfo.name = '陈一诺';
+    createDraft.jobInfo.jd = '产品经理实习生';
+    createDraft.worksInfo.rawLinks = '作品链接 | https://example.com | 项目说明';
+    const siteDraft = generateSiteDraft(createDraft);
+
+    render(<TemplateRenderer siteDraft={siteDraft} />);
+    expect(screen.getByRole('link', { name: '查看作品' })).toHaveAttribute('href', 'https://example.com');
+
+    const templateClasses = ['neo', 'pure', 'flow', 'grid', 'canvas', 'glass'].map((template) => {
+      const { container, unmount } = render(<TemplateRenderer siteDraft={{ ...siteDraft, template }} />);
+      const className = container.firstChild.className;
+      unmount();
+      return className;
+    });
+
+    expect(new Set(templateClasses).size).toBe(6);
+    expect(templateClasses).toEqual(expect.arrayContaining([expect.stringMatching(/template-neo-site/)]));
+    expect(templateClasses).toEqual(expect.arrayContaining([expect.stringMatching(/template-canvas-site/)]));
   });
 });
 
@@ -156,16 +257,25 @@ describe('PageU app shell', () => {
     expect(screen.getByLabelText('学校')).toBeInTheDocument();
     expect(screen.getByLabelText('学校')).toHaveAttribute('autocomplete', 'off');
     expect(screen.getByLabelText('专业')).toBeInTheDocument();
+    expect(screen.getByLabelText('个人标签 / 一句话定位')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: '岗位信息' })).toBeInTheDocument();
     expect(screen.getByLabelText('岗位 JD')).toBeRequired();
     expect(screen.getByLabelText('目标公司')).toBeInTheDocument();
     expect(screen.getByLabelText('求职类型')).toBeInTheDocument();
+    expect(screen.getByLabelText('为什么想做这个岗位')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '让我理解一下这个岗位' })).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: '经历信息' })).toBeInTheDocument();
     expect(screen.getByText('建议描述：背景、目标、行动、结果')).toBeInTheDocument();
+    expect(screen.getByLabelText('我的角色 1')).toBeInTheDocument();
+    expect(screen.getByLabelText('时间 / 阶段 1')).toBeInTheDocument();
+    expect(screen.getByLabelText('项目/作品链接 1')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: '技能证书' })).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('例如：React、Python、Axure、SQL、用户研究')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('例如：英语六级、奖学金、竞赛奖项')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('React、Python、SQL、Axure、用户研究、产品设计')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('英语六级、奖学金、竞赛奖项、优秀学生干部')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: '作品 / 项目链接' })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: '作品 / 项目链接' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: '你希望网站给人的感觉' })).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: '科技未来' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '生成我的个人网站' })).toBeInTheDocument();
 
     for (const template of ['Neo', 'Pure', 'Flow', 'Grid', 'Canvas', 'Glass']) {
@@ -325,8 +435,8 @@ describe('PageU app shell', () => {
     await user.click(screen.getByRole('button', { name: '确认生成' }));
 
     expect(screen.getByRole('heading', { level: 1, name: '再调整一下，让它更像你' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 2, name: '陈一诺' })).toBeInTheDocument();
-    expect(screen.getByText('用户体验设计实习生')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: '陈一诺' })).toBeInTheDocument();
+    expect(screen.getAllByText(/用户体验设计实习生/).length).toBeGreaterThan(0);
     expect(screen.getAllByText('AI 简历优化项目').length).toBeGreaterThan(0);
     expect(screen.queryByRole('heading', { level: 2, name: 'PageU 同学' })).not.toBeInTheDocument();
   });
@@ -528,15 +638,46 @@ describe('PageU app shell', () => {
 
     expect(screen.getByRole('main')).toHaveAttribute('data-template', 'glass');
     expect(screen.getByRole('heading', { level: 1, name: '林小雨' })).toBeInTheDocument();
-    expect(screen.getByText('产品设计实习生')).toBeInTheDocument();
-    expect(screen.getByText('经历')).toBeInTheDocument();
-    expect(screen.getByText('项目')).toBeInTheDocument();
-    expect(screen.getByText('技能')).toBeInTheDocument();
-    expect(screen.getByText('作品')).toBeInTheDocument();
-    expect(screen.getByText('联系方式')).toBeInTheDocument();
+    expect(screen.getAllByText(/产品设计实习生/).length).toBeGreaterThan(0);
+    expect(screen.getByRole('heading', { level: 2, name: 'Featured Projects' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: '技能与证书' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: '作品与链接' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: '联系我' })).toBeInTheDocument();
     expect(screen.getByText('Generated by PageU')).toBeInTheDocument();
     expect(screen.queryByRole('complementary', { name: '模块区' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '发布网站' })).not.toBeInTheDocument();
+  });
+
+  it('renders /site/demo as a portfolio website with hero and featured projects', () => {
+    const createDraft = createInitialDraft();
+    createDraft.basicInfo.name = '陈一诺';
+    createDraft.basicInfo.personalTagline = 'AI产品｜用户研究｜把想法做成产品';
+    createDraft.jobInfo.jd = '用户体验设计实习生，负责用户研究和原型设计。';
+    createDraft.experiences = [
+      {
+        id: 'experience-ai',
+        title: 'AI 简历优化项目',
+        role: '产品设计负责人',
+        period: '2025.09 - 2025.12',
+        description: '调研同学求职痛点，设计简历分析和建议生成流程。',
+        link: 'https://example.com/demo',
+        collapsed: false,
+      },
+    ];
+    const siteDraft = generateSiteDraft(createDraft);
+    localStorage.setItem(SITE_DRAFT_STORAGE_KEY, JSON.stringify(siteDraft));
+
+    render(
+      <MemoryRouter initialEntries={['/site/demo']}>
+        <App />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole('heading', { level: 1, name: '陈一诺' })).toBeInTheDocument();
+    expect(screen.getByText('AI产品｜用户研究｜把想法做成产品')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'Featured Projects' })).toBeInTheDocument();
+    expect(screen.getAllByText('AI 简历优化项目').length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('link', { name: '查看项目' }).some((link) => link.getAttribute('href') === 'https://example.com/demo')).toBe(true);
   });
 
   it('switches generated site layout class when the selected template changes', () => {

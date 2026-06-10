@@ -3,7 +3,10 @@ export const DRAFT_STORAGE_KEY = 'pageu:createDraft';
 export const createEmptyExperience = (index = 1) => ({
   id: `experience-${Date.now()}-${index}`,
   title: '',
+  role: '',
+  period: '',
   description: '',
+  link: '',
   collapsed: false,
 });
 
@@ -14,24 +17,33 @@ export const createInitialDraft = () => ({
     contact: '',
     school: '',
     major: '',
+    personalTagline: '',
   },
   jobInfo: {
     jd: '',
     company: '',
     jobType: '',
+    motivation: '',
   },
   skillsInfo: {
     keywords: '',
     certificates: '',
   },
+  worksInfo: {
+    rawLinks: '',
+  },
   experiences: [
     {
       id: 'experience-1',
       title: '',
+      role: '',
+      period: '',
       description: '',
+      link: '',
       collapsed: false,
     },
   ],
+  stylePreference: '',
   template: 'neo',
   meta: {
     version: 1,
@@ -60,6 +72,10 @@ export const normalizeDraft = (draft) => {
     skillsInfo: {
       ...initialDraft.skillsInfo,
       ...draft.skillsInfo,
+    },
+    worksInfo: {
+      ...initialDraft.worksInfo,
+      ...draft.worksInfo,
     },
     experiences:
       Array.isArray(draft.experiences) && draft.experiences.length > 0

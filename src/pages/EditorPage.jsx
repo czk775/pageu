@@ -7,6 +7,7 @@ import { FormField } from '../components/FormField';
 import { StatusToast } from '../components/StatusToast';
 import { generateSiteDraft } from '../lib/draftGenerator';
 import { loadSiteDraft, saveSiteDraft } from '../lib/storage';
+import { TemplateRenderer } from '../renderers/TemplateRenderer';
 import { useCreateDraft } from '../state/CreateDraftContext';
 import { createAnalysisResult } from '../types/analysisResult';
 import { sectionLabels } from '../types/siteDraft';
@@ -52,6 +53,7 @@ export function EditorPage() {
         ...draft.profile,
         [field]: value,
       },
+      hero: field === 'headline' ? { ...draft.hero, subtitle: value } : draft.hero,
     }));
   };
 
@@ -191,61 +193,7 @@ export function EditorPage() {
               </div>
             </div>
 
-            <div
-              className={`site-preview ${previewMode === 'mobile' ? 'mobile-preview' : ''}`}
-              style={{
-                '--site-primary': siteDraft.theme.primaryColor,
-                '--site-bg': siteDraft.theme.background,
-                '--site-text': siteDraft.theme.textColor,
-              }}
-            >
-              <button
-                className={`preview-hero ${selectedSectionId === 'section-intro' ? 'selected' : ''}`}
-                type="button"
-                onClick={() => setSelectedSectionId('section-intro')}
-              >
-                <div className="preview-avatar" aria-hidden="true">
-                  {siteDraft.profile.name.slice(0, 1) || 'U'}
-                </div>
-                <div>
-                  <p>{siteDraft.profile.targetRole}</p>
-                  <h2>{siteDraft.profile.name}</h2>
-                  <strong>{siteDraft.profile.headline}</strong>
-                  <span>{siteDraft.profile.intro}</span>
-                </div>
-              </button>
-
-              {siteDraft.sections
-                .filter((section) => section.visible && !section.collapsed && section.type !== 'intro' && section.type !== 'avatar')
-                .map((section) => (
-                  <button
-                    className={`preview-section ${selectedSectionId === section.id ? 'selected' : ''}`}
-                    key={section.id}
-                    type="button"
-                    onClick={() => setSelectedSectionId(section.id)}
-                  >
-                    <h3>{section.title}</h3>
-                    {section.type === 'skills' ? (
-                      <div className="preview-skills">
-                        {section.items.map((item) => (
-                          <span key={item.id}>{item.title}</span>
-                        ))}
-                      </div>
-                    ) : section.items.length > 0 ? (
-                      <div className="preview-items">
-                        {section.items.map((item) => (
-                          <article key={item.id}>
-                            <h4>{item.title}</h4>
-                            {item.description ? <p>{item.description}</p> : null}
-                          </article>
-                        ))}
-                      </div>
-                    ) : (
-                      <p>{section.content}</p>
-                    )}
-                  </button>
-                ))}
-            </div>
+            <TemplateRenderer siteDraft={siteDraft} previewMode={previewMode} className="editor-render-preview" />
           </section>
 
           <aside className="editor-panel edit-panel" aria-label="编辑区">

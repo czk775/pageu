@@ -1,83 +1,257 @@
 import { createAnalysisResult } from '../types/analysisResult';
 import { createSection, defaultSectionOrder } from '../types/siteDraft';
 
-const fallbackSkills = ['产品思维', 'React 开发', '沟通协作', '项目落地'];
-const fallbackWorks = ['个人网站作品集', '校园项目展示'];
+const fallbackSkills = ['产品思维', '技术理解', '表达能力', '执行力'];
+const fallbackProjectTitle = '校园项目经历';
+const urlPattern = /(https?:\/\/[^\s|，,；;]+)/i;
+
+const clean = (value = '') => String(value || '').trim();
 
 const splitListText = (value = '') =>
-  value
-    .split(/[，,、；;\n]/)
+  clean(value)
+    .split(/[，,、；;\n\s]+/)
     .map((item) => item.trim())
     .filter(Boolean);
 
+const unique = (items = []) => [...new Set(items.map((item) => clean(item)).filter(Boolean))];
+
 const extractTargetRole = (jd = '') => {
-  const firstPhrase = jd.split(/[，,。.；;\n]/).find(Boolean)?.trim();
+  const firstPhrase = clean(jd)
+    .split(/[，,。.；;\n]/)
+    .find(Boolean)
+    ?.trim();
   return firstPhrase || '目标岗位';
 };
 
-const toExperienceItems = (experiences = []) => {
+const getHostTitle = (url = '') => {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '') || '作品链接';
+  } catch {
+    return '作品链接';
+  }
+};
+
+const parseWorksRawLinks = (rawLinks = '') =>
+  clean(rawLinks)
+    .split(/\n+/)
+    .map((line, index) => {
+      const parts = line
+        .split('|')
+        .map((part) => part.trim())
+        .filter(Boolean);
+      const matchedUrl = line.match(urlPattern)?.[0] || '';
+
+      if (!parts.length && !matchedUrl) {
+        return null;
+      }
+
+      if (parts.length >= 2 && /^https?:\/\//i.test(parts[1])) {
+        return {
+          id: `work-link-${index + 1}`,
+          title: parts[0] || getHostTitle(parts[1]),
+          url: parts[1],
+          description: parts[2] || '',
+        };
+      }
+
+      return {
+        id: `work-link-${index + 1}`,
+        title: parts.find((part) => !/^https?:\/\//i.test(part)) || getHostTitle(matchedUrl),
+        url: matchedUrl,
+        description: parts.filter((part) => part !== matchedUrl && !/^https?:\/\//i.test(part)).slice(1).join(' '),
+      };
+    })
+    .filter((item) => item && item.url);
+
+const pickTags = (experience, analysisResult) =>
+  unique([
+    ...splitListText(experience.role),
+    ...(analysisResult?.jobKeywords || []),
+    ...(analysisResult?.abilityFocus || []),
+  ]).slice(0, 5);
+
+const toProjects = (experiences = [], targetRole, analysisResult) => {
   const filled = experiences
     .map((experience) => ({
-      title: experience.title?.trim(),
-      description: experience.description?.trim(),
+      id: experience.id,
+      title: clean(experience.title),
+      role: clean(experience.role),
+      period: clean(experience.period),
+      description: clean(experience.description),
+      link: clean(experience.link),
     }))
-    .filter((experience) => experience.title || experience.description);
+    .filter((experience) => experience.title || experience.description || experience.link);
 
-  return filled.length > 0
-    ? filled.map((experience, index) => ({
-        id: `experience-item-${index + 1}`,
-        title: experience.title || `经历${index + 1}`,
-        description: experience.description || '这段经历值得被看见。',
-      }))
+  const source = filled.length
+    ? filled
     : [
         {
-          id: 'experience-item-default',
-          title: '校园项目经历',
+          id: 'experience-default',
+          title: fallbackProjectTitle,
+          role: '项目参与者',
+          period: '',
           description: '把你的项目、比赛或校园实践整理成更适合展示的故事。',
+          link: '',
         },
       ];
+
+  return source.map((experience, index) => {
+    const title = experience.title || `项目经历 ${index + 1}`;
+    const role = experience.role || '项目参与者';
+    const summary = `${role}围绕「${title}」完成了一段可展示的项目实践。`;
+    const problem = experience.description ? '将真实经历中的问题、目标和过程整理为可被快速理解的展示内容。' : '围绕目标岗位补充一段可展示的项目故事。';
+    const action = experience.description
+      ? experience.description.split(/[。！？!?]/).find(Boolean)?.trim() || '参与了项目推进与内容整理。'
+      : '参与了项目推进与内容整理。';
+    const result = experience.description ? '沉淀了可用于个人网站展示的项目素材。' : '完成了项目经历的初步梳理。';
+    const jdRelevance = `这段经历可以帮助展示与${targetRole}相关的理解、表达和落地能力。`;
+
+    return {
+      id: `project-${index + 1}`,
+      sourceExperienceId: experience.id,
+      title,
+      role,
+      period: experience.period,
+      summary,
+      problem,
+      action,
+      result,
+      jdRelevance,
+      tags: pickTags(experience, analysisResult),
+      link: experience.link,
+    };
+  });
+};
+
+const toExperienceStory = (projects = []) =>
+  projects.map((project) => ({
+    title: project.title,
+    period: project.period,
+    description: project.summary,
+    impact: project.result,
+  }));
+
+const toWorks = (createDraft, projects) => {
+  const rawWorks = parseWorksRawLinks(createDraft?.worksInfo?.rawLinks);
+  const projectWorks = projects
+    .filter((project) => project.link)
+    .map((project, index) => ({
+      id: `project-work-${index + 1}`,
+      title: project.title,
+      url: project.link,
+      description: project.summary,
+    }));
+
+  return [...rawWorks, ...projectWorks];
+};
+
+const buildHighlights = (createDraft, analysisResult, projects, skills) => {
+  const targetRole = extractTargetRole(createDraft?.jobInfo?.jd);
+  const major = clean(createDraft?.basicInfo?.major);
+  const highlighted = analysisResult?.highlightedExperiences?.[0] || projects[0]?.title || '项目经历';
+
+  return [
+    {
+      label: '目标方向',
+      value: analysisResult?.jobKeywords?.[0] || targetRole,
+      description: `围绕${targetRole}组织个人展示内容。`,
+    },
+    {
+      label: '能力组合',
+      value: skills.slice(0, 2).join(' / ') || '复合能力',
+      description: major ? `${major}背景与项目表达结合。` : '把技能、项目和表达集中呈现。',
+    },
+    {
+      label: '重点经历',
+      value: highlighted,
+      description: `优先展示 ${projects.length} 段项目/实践素材。`,
+    },
+  ];
+};
+
+const buildTheme = (template = 'neo', stylePreference = '') => {
+  const themeMap = {
+    neo: { primaryColor: '#22b9e9', background: '#eefbff', textColor: '#12384c' },
+    pure: { primaryColor: '#111111', background: '#fbfbf7', textColor: '#151515' },
+    flow: { primaryColor: '#8d7cf6', background: '#fff8f4', textColor: '#2f2748' },
+    grid: { primaryColor: '#2563eb', background: '#f8fafc', textColor: '#0f172a' },
+    canvas: { primaryColor: '#ff7a59', background: '#fff4df', textColor: '#25150f' },
+    glass: { primaryColor: '#20c7d8', background: '#f1fdff', textColor: '#12384c' },
+  };
+
+  if (stylePreference === '极简高级') {
+    return themeMap.pure;
+  }
+
+  if (stylePreference === '创意表达') {
+    return themeMap.canvas;
+  }
+
+  return themeMap[template] || themeMap.neo;
 };
 
 export const generateSiteDraft = (createDraft, analysisResult = createAnalysisResult(createDraft)) => {
-  const name = createDraft?.basicInfo?.name?.trim() || 'PageU 同学';
-  const major = createDraft?.basicInfo?.major?.trim();
+  const name = clean(createDraft?.basicInfo?.name) || 'PageU 同学';
+  const major = clean(createDraft?.basicInfo?.major);
+  const school = clean(createDraft?.basicInfo?.school);
+  const personalTagline = clean(createDraft?.basicInfo?.personalTagline);
   const targetRole = extractTargetRole(createDraft?.jobInfo?.jd);
-  const experienceItems = toExperienceItems(createDraft?.experiences);
-  const enteredSkills = splitListText(createDraft?.skillsInfo?.keywords);
-  const certificates = splitListText(createDraft?.skillsInfo?.certificates);
-  const skills = [
-    ...enteredSkills,
+  const motivation = clean(createDraft?.jobInfo?.motivation);
+  const template = createDraft?.template || 'neo';
+  const stylePreference = clean(createDraft?.stylePreference);
+  const skills = unique([
+    ...splitListText(createDraft?.skillsInfo?.keywords),
     ...(analysisResult?.abilityFocus?.length ? analysisResult.abilityFocus : fallbackSkills),
-    ...certificates,
-  ].slice(0, 8);
+  ]).slice(0, 10);
+  const certificates = unique(splitListText(createDraft?.skillsInfo?.certificates));
+  const projects = toProjects(createDraft?.experiences, targetRole, analysisResult);
+  const works = toWorks(createDraft, projects);
+  const experienceStory = toExperienceStory(projects);
+  const intro =
+    motivation ||
+    personalTagline ||
+    (major ? `${major}背景，正在面向${targetRole}打造个人网站。` : `正在面向${targetRole}打造个人网站。`);
+  const highlights = buildHighlights(createDraft, analysisResult, projects, skills);
+  const contactValue = clean(createDraft?.basicInfo?.contact);
 
   const sectionMap = {
     avatar: createSection('avatar', {
       content: createDraft?.basicInfo?.photoName || '',
     }),
     intro: createSection('intro', {
-      content: major ? `${major}背景，正在面向${targetRole}打造个人展示。` : `正在面向${targetRole}打造个人展示。`,
+      content: intro,
     }),
     experience: createSection('experience', {
-      items: experienceItems,
+      items: experienceStory.map((story, index) => ({
+        id: `experience-item-${index + 1}`,
+        title: story.title,
+        description: story.description,
+      })),
     }),
     project: createSection('project', {
-      items: experienceItems.slice(0, 2),
+      items: projects.map((project) => ({
+        id: project.id,
+        title: project.title,
+        description: project.summary,
+        link: project.link,
+      })),
     }),
     skills: createSection('skills', {
-      items: skills.map((skill, index) => ({
+      items: [...skills, ...certificates].map((skill, index) => ({
         id: `skill-${index + 1}`,
         title: skill,
       })),
     }),
     works: createSection('works', {
-      items: fallbackWorks.map((work, index) => ({
-        id: `work-${index + 1}`,
-        title: work,
+      items: works.map((work, index) => ({
+        id: work.id || `work-${index + 1}`,
+        title: work.title,
+        description: work.description,
+        url: work.url,
       })),
     }),
     contact: createSection('contact', {
-      content: createDraft?.basicInfo?.contact || '留下联系方式，让机会找到你。',
+      content: contactValue || '留下联系方式，让机会找到你。',
     }),
   };
 
@@ -85,19 +259,41 @@ export const generateSiteDraft = (createDraft, analysisResult = createAnalysisRe
     profile: {
       name,
       targetRole,
-      headline: `${name}的个人主页`,
-      intro: sectionMap.intro.content,
+      headline: personalTagline || `${name}的个人网站`,
+      intro,
       contact: sectionMap.contact.content,
+      school,
+      major,
+      photoName: createDraft?.basicInfo?.photoName || '',
+      personalTagline,
+    },
+    hero: {
+      eyebrow: `个人网站 / ${targetRole}`,
+      title: name,
+      subtitle: personalTagline || intro,
+      primaryCta: '查看项目',
+      secondaryCta: '联系我',
+    },
+    highlights,
+    projects,
+    experienceStory,
+    skills,
+    certificates,
+    works,
+    contact: {
+      email: contactValue.includes('@') ? contactValue : '',
+      phone: contactValue && !contactValue.includes('@') ? contactValue : '',
+      links: works.map((work) => ({
+        title: work.title,
+        url: work.url,
+      })),
     },
     sections: defaultSectionOrder.map((type) => sectionMap[type]),
-    theme: {
-      primaryColor: '#22b9e9',
-      background: '#f1fdff',
-      textColor: '#12384c',
-    },
-    template: createDraft?.template || 'neo',
+    theme: buildTheme(template, stylePreference),
+    template,
+    stylePreference,
     meta: {
-      version: 1,
+      version: 2,
       updatedAt: new Date().toISOString(),
     },
   };

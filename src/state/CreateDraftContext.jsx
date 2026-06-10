@@ -68,6 +68,29 @@ export function CreateDraftProvider({ children }) {
           },
         }));
       },
+      updateWorksInfo(field, value) {
+        setCreateDraft((draft) => ({
+          ...draft,
+          worksInfo: {
+            ...draft.worksInfo,
+            [field]: value,
+          },
+          meta: {
+            ...draft.meta,
+            updatedAt: new Date().toISOString(),
+          },
+        }));
+      },
+      updateStylePreference(value) {
+        setCreateDraft((draft) => ({
+          ...draft,
+          stylePreference: value,
+          meta: {
+            ...draft.meta,
+            updatedAt: new Date().toISOString(),
+          },
+        }));
+      },
       addExperience() {
         setCreateDraft((draft) => ({
           ...draft,

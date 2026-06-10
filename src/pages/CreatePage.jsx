@@ -15,6 +15,8 @@ export function CreatePage() {
     updateBasicInfo,
     updateJobInfo,
     updateSkillsInfo,
+    updateWorksInfo,
+    updateStylePreference,
     addExperience,
     updateExperience,
     toggleExperience,
@@ -86,6 +88,16 @@ export function CreatePage() {
                 onChange={(event) => updateBasicInfo('major', event.target.value)}
               />
             </FormField>
+            <FormField id="personal-tagline" label="个人标签 / 一句话定位">
+              <input
+                id="personal-tagline"
+                autoComplete="off"
+                placeholder="例如：AI产品｜市场营销｜喜欢把想法做成产品"
+                type="text"
+                value={createDraft.basicInfo.personalTagline}
+                onChange={(event) => updateBasicInfo('personalTagline', event.target.value)}
+              />
+            </FormField>
           </div>
         </section>
 
@@ -124,6 +136,16 @@ export function CreatePage() {
               </select>
             </FormField>
           </div>
+          <FormField id="job-motivation" label="为什么想做这个岗位">
+            <textarea
+              id="job-motivation"
+              autoComplete="off"
+              placeholder="例如：希望把技术理解转化为真实产品价值，做连接用户与AI能力的人。"
+              rows={4}
+              value={createDraft.jobInfo.motivation}
+              onChange={(event) => updateJobInfo('motivation', event.target.value)}
+            />
+          </FormField>
         </section>
 
         <section className="create-block" aria-labelledby="experience-title">
@@ -163,6 +185,26 @@ export function CreatePage() {
                           onChange={(event) => updateExperience(experience.id, 'title', event.target.value)}
                         />
                       </FormField>
+                      <div className="create-grid two-grid">
+                        <FormField id={`experience-role-${experience.id}`} label={`我的角色 ${number}`}>
+                          <input
+                            id={`experience-role-${experience.id}`}
+                            autoComplete="off"
+                            type="text"
+                            value={experience.role}
+                            onChange={(event) => updateExperience(experience.id, 'role', event.target.value)}
+                          />
+                        </FormField>
+                        <FormField id={`experience-period-${experience.id}`} label={`时间 / 阶段 ${number}`}>
+                          <input
+                            id={`experience-period-${experience.id}`}
+                            autoComplete="off"
+                            type="text"
+                            value={experience.period}
+                            onChange={(event) => updateExperience(experience.id, 'period', event.target.value)}
+                          />
+                        </FormField>
+                      </div>
                       <FormField id={`experience-description-${experience.id}`} label={`经历描述 ${number}`}>
                         <textarea
                           id={`experience-description-${experience.id}`}
@@ -170,6 +212,16 @@ export function CreatePage() {
                           rows={5}
                           value={experience.description}
                           onChange={(event) => updateExperience(experience.id, 'description', event.target.value)}
+                        />
+                      </FormField>
+                      <FormField id={`experience-link-${experience.id}`} label={`项目/作品链接 ${number}`}>
+                        <input
+                          id={`experience-link-${experience.id}`}
+                          autoComplete="off"
+                          placeholder="https://github.com/xxx 或 https://demo.xxx.com"
+                          type="url"
+                          value={experience.link}
+                          onChange={(event) => updateExperience(experience.id, 'link', event.target.value)}
                         />
                       </FormField>
                     </div>
@@ -192,7 +244,7 @@ export function CreatePage() {
               <textarea
                 id="skill-keywords"
                 autoComplete="off"
-                placeholder="例如：React、Python、Axure、SQL、用户研究"
+                placeholder="React、Python、SQL、Axure、用户研究、产品设计"
                 rows={4}
                 value={createDraft.skillsInfo.keywords}
                 onChange={(event) => updateSkillsInfo('keywords', event.target.value)}
@@ -202,12 +254,44 @@ export function CreatePage() {
               <textarea
                 id="skill-certificates"
                 autoComplete="off"
-                placeholder="例如：英语六级、奖学金、竞赛奖项"
+                placeholder="英语六级、奖学金、竞赛奖项、优秀学生干部"
                 rows={4}
                 value={createDraft.skillsInfo.certificates}
                 onChange={(event) => updateSkillsInfo('certificates', event.target.value)}
               />
             </FormField>
+          </div>
+        </section>
+
+        <section className="create-block" aria-labelledby="works-title">
+          <h2 id="works-title">作品 / 项目链接</h2>
+          <FormField id="works-raw-links" label="作品 / 项目链接">
+            <textarea
+              id="works-raw-links"
+              autoComplete="off"
+              placeholder={'PageU Demo | https://example.com | AI个人网站生成器\nGitHub | https://github.com/xxx | 代码作品集\n毕业设计演示 | https://example.com | 校园社团管理系统演示'}
+              rows={5}
+              value={createDraft.worksInfo.rawLinks}
+              onChange={(event) => updateWorksInfo('rawLinks', event.target.value)}
+            />
+          </FormField>
+        </section>
+
+        <section className="create-block" aria-labelledby="style-preference-title">
+          <h2 id="style-preference-title">你希望网站给人的感觉</h2>
+          <div className="style-preference-options">
+            {['专业可信', '科技未来', '创意表达', '温暖亲和', '极简高级'].map((preference) => (
+              <label key={preference} className={createDraft.stylePreference === preference ? 'active' : ''}>
+                <input
+                  checked={createDraft.stylePreference === preference}
+                  name="stylePreference"
+                  onChange={() => updateStylePreference(preference)}
+                  type="radio"
+                  value={preference}
+                />
+                {preference}
+              </label>
+            ))}
           </div>
         </section>
 
