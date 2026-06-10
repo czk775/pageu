@@ -147,11 +147,14 @@ describe('PageU app shell', () => {
     );
 
     expect(screen.getByRole('heading', { level: 1, name: '告诉我你的经历' })).toBeInTheDocument();
+    expect(screen.getByRole('form', { name: '创建个人网站信息' })).toHaveAttribute('autocomplete', 'off');
     expect(screen.getByRole('heading', { level: 2, name: '个人基本信息' })).toBeInTheDocument();
     expect(screen.getByLabelText('照片')).toBeInTheDocument();
     expect(screen.getByLabelText('姓名')).toBeInTheDocument();
+    expect(screen.getByLabelText('姓名')).toHaveAttribute('autocomplete', 'off');
     expect(screen.getByLabelText('联系方式')).toBeInTheDocument();
     expect(screen.getByLabelText('学校')).toBeInTheDocument();
+    expect(screen.getByLabelText('学校')).toHaveAttribute('autocomplete', 'off');
     expect(screen.getByLabelText('专业')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: '岗位信息' })).toBeInTheDocument();
     expect(screen.getByLabelText('岗位 JD')).toBeRequired();

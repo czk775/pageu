@@ -30,7 +30,7 @@ export function CreatePage() {
   return (
     <main className="create-page">
       <DynamicBackground />
-      <form className="create-flow" onSubmit={handleGenerate}>
+      <form aria-label="创建个人网站信息" autoComplete="off" className="create-flow" onSubmit={handleGenerate}>
         <header className="create-header">
           <Link className="placeholder-brand" to="/">
             PageU
@@ -53,6 +53,7 @@ export function CreatePage() {
             <FormField id="name" label="姓名">
               <input
                 id="name"
+                autoComplete="off"
                 type="text"
                 value={createDraft.basicInfo.name}
                 onChange={(event) => updateBasicInfo('name', event.target.value)}
@@ -61,6 +62,7 @@ export function CreatePage() {
             <FormField id="contact" label="联系方式">
               <input
                 id="contact"
+                autoComplete="off"
                 type="text"
                 value={createDraft.basicInfo.contact}
                 onChange={(event) => updateBasicInfo('contact', event.target.value)}
@@ -69,6 +71,7 @@ export function CreatePage() {
             <FormField id="school" label="学校">
               <input
                 id="school"
+                autoComplete="off"
                 type="text"
                 value={createDraft.basicInfo.school}
                 onChange={(event) => updateBasicInfo('school', event.target.value)}
@@ -77,6 +80,7 @@ export function CreatePage() {
             <FormField id="major" label="专业">
               <input
                 id="major"
+                autoComplete="off"
                 type="text"
                 value={createDraft.basicInfo.major}
                 onChange={(event) => updateBasicInfo('major', event.target.value)}
@@ -90,6 +94,7 @@ export function CreatePage() {
           <FormField id="job-jd" label="岗位 JD">
             <textarea
               id="job-jd"
+              autoComplete="off"
               required
               rows={5}
               value={createDraft.jobInfo.jd}
@@ -100,6 +105,7 @@ export function CreatePage() {
             <FormField id="target-company" label="目标公司">
               <input
                 id="target-company"
+                autoComplete="off"
                 type="text"
                 value={createDraft.jobInfo.company}
                 onChange={(event) => updateJobInfo('company', event.target.value)}
@@ -151,6 +157,7 @@ export function CreatePage() {
                       <FormField id={`experience-title-${experience.id}`} label={`经历标题 ${number}`}>
                         <input
                           id={`experience-title-${experience.id}`}
+                          autoComplete="off"
                           type="text"
                           value={experience.title}
                           onChange={(event) => updateExperience(experience.id, 'title', event.target.value)}
@@ -159,6 +166,7 @@ export function CreatePage() {
                       <FormField id={`experience-description-${experience.id}`} label={`经历描述 ${number}`}>
                         <textarea
                           id={`experience-description-${experience.id}`}
+                          autoComplete="off"
                           rows={5}
                           value={experience.description}
                           onChange={(event) => updateExperience(experience.id, 'description', event.target.value)}
@@ -183,6 +191,7 @@ export function CreatePage() {
             <FormField id="skill-keywords" label="技能关键词">
               <textarea
                 id="skill-keywords"
+                autoComplete="off"
                 placeholder="例如：React、Python、Axure、SQL、用户研究"
                 rows={4}
                 value={createDraft.skillsInfo.keywords}
@@ -192,6 +201,7 @@ export function CreatePage() {
             <FormField id="skill-certificates" label="证书/奖项">
               <textarea
                 id="skill-certificates"
+                autoComplete="off"
                 placeholder="例如：英语六级、奖学金、竞赛奖项"
                 rows={4}
                 value={createDraft.skillsInfo.certificates}
