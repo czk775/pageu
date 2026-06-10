@@ -5,8 +5,8 @@ const DEFAULT_BASE_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1';
 const DEFAULT_MODEL = 'qwen-plus';
 
 const clampArray = (items, fallback) => {
-  const source = Array.isArray(items) ? items : fallback;
-  return [...new Set(source.map((item) => String(item || '').trim()).filter(Boolean))].slice(0, 6);
+  const source = Array.isArray(items) ? items : [];
+  return [...new Set([...source, ...fallback].map((item) => String(item || '').trim()).filter(Boolean))].slice(0, 6);
 };
 
 const stripCodeFence = (content) =>
@@ -36,7 +36,7 @@ const parseAnalysisContent = (content) => {
   }
 };
 
-const toStandardAnalysisResult = (payload, fallbackResult, meta) => ({
+export const normalizeAnalysisPayload = (payload, fallbackResult, meta) => ({
   jobKeywords: clampArray(payload?.jobKeywords, fallbackResult.jobKeywords),
   abilityFocus: clampArray(payload?.abilityFocus, fallbackResult.abilityFocus),
   displayOrder: clampArray(payload?.displayOrder, fallbackResult.displayOrder),
@@ -100,7 +100,7 @@ export async function analyzeCareerDraft(createDraft, userAdjustment = '') {
 
     const parsed = parseAnalysisContent(content);
 
-    return toStandardAnalysisResult(parsed, fallbackResult, {
+    return normalizeAnalysisPayload(parsed, fallbackResult, {
       provider: 'qwen',
       fallback: false,
       error: null,

@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
 import App from './App';
 import { generateSiteDraft } from './lib/draftGenerator';
-import { analyzeCareerDraft } from './services/ai/aiClient';
+import { analyzeCareerDraft, normalizeAnalysisPayload } from './services/ai/aiClient';
 import { createAnalysisResult } from './types/analysisResult';
 import { createInitialDraft } from './types/createDraft';
 import { SITE_DRAFT_STORAGE_KEY } from './types/siteDraft';
@@ -60,6 +60,32 @@ describe('AI analysis service', () => {
       fallback: true,
       error: null,
     });
+  });
+
+  it('normalizes short AI arrays by backfilling mock values', () => {
+    const createDraft = createInitialDraft();
+    const fallbackResult = createAnalysisResult(createDraft);
+    const normalized = normalizeAnalysisPayload(
+      {
+        jobKeywords: ['AI'],
+        abilityFocus: ['表达能力'],
+        displayOrder: ['项目经历'],
+        highlightedExperiences: ['校园项目经历'],
+      },
+      fallbackResult,
+      {
+        provider: 'qwen',
+        fallback: false,
+        error: null,
+        updatedAt: '2026-06-10T00:00:00.000Z',
+      },
+    );
+
+    expect(normalized.jobKeywords.length).toBeGreaterThanOrEqual(3);
+    expect(normalized.abilityFocus.length).toBeGreaterThanOrEqual(3);
+    expect(normalized.displayOrder.length).toBeGreaterThanOrEqual(3);
+    expect(normalized.highlightedExperiences.length).toBeGreaterThanOrEqual(3);
+    expect(normalized.jobKeywords.length).toBeLessThanOrEqual(6);
   });
 });
 
