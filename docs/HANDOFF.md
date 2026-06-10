@@ -396,3 +396,42 @@ npm run build: success
 - 为 `skillsInfo` 增加更细的 tag 输入体验，但当前 MVP 保持 textarea 更稳定。
 - 给模板生态增加独立配置结构，让选择卡片和最终模板共享设计 token。
 - 部署前补一轮移动端真实设备截图验收。
+
+## 23. 小U AI 化补充
+
+在 Phase 7.6 之后，小U已从纯本地规则问答升级为真实 AI 优先的轻量助手。
+
+新增文件：
+
+- `src/services/ai/assistantChat.js`
+
+调用策略：
+
+1. 小U聊天框提交问题。
+2. `FloatingAssistant` 调用 `answerAssistantQuestion({ question, pathname, createDraft })`。
+3. 服务读取与分析页相同的环境变量：
+   - `VITE_AI_PROVIDER`
+   - `VITE_DASHSCOPE_API_KEY`
+   - `VITE_QWEN_MODEL`
+   - `VITE_QWEN_BASE_URL`
+4. 有 Key 且 provider 为 `qwen` 时，请求 DashScope OpenAI 兼容接口。
+5. 测试环境、无 Key、provider 非 qwen、接口失败或返回为空时，自动使用本地规则 fallback。
+
+小U回答范围：
+
+- PageU 填写流程
+- 经历/JD/模板选择
+- 分析、编辑、发布流程
+- 当前页面状态相关引导
+
+安全说明：
+
+- 仍未在代码中硬编码 API Key。
+- `.env.local` 继续保持 Git 忽略。
+- 当前仍是前端 Demo，真实生产环境建议迁移到后端或 Serverless 代理。
+
+新增测试：
+
+```text
+answers Xiaou questions through the AI assistant service with mock fallback in tests
+```

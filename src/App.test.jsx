@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import App from './App';
 import { generateSiteDraft } from './lib/draftGenerator';
 import { analyzeCareerDraft, normalizeAnalysisPayload } from './services/ai/aiClient';
+import { answerAssistantQuestion } from './services/ai/assistantChat';
 import { createAnalysisResult } from './types/analysisResult';
 import { createInitialDraft } from './types/createDraft';
 import { SITE_DRAFT_STORAGE_KEY } from './types/siteDraft';
@@ -86,6 +87,24 @@ describe('AI analysis service', () => {
     expect(normalized.displayOrder.length).toBeGreaterThanOrEqual(3);
     expect(normalized.highlightedExperiences.length).toBeGreaterThanOrEqual(3);
     expect(normalized.jobKeywords.length).toBeLessThanOrEqual(6);
+  });
+
+  it('answers Xiaou questions through the AI assistant service with mock fallback in tests', async () => {
+    const createDraft = createInitialDraft();
+    createDraft.jobInfo.jd = '产品经理实习生，负责需求分析和用户沟通。';
+
+    const result = await answerAssistantQuestion({
+      question: '模板怎么选',
+      pathname: '/create',
+      createDraft,
+    });
+
+    expect(result.answer).toContain('模板只影响视觉风格');
+    expect(result.meta).toMatchObject({
+      provider: 'mock',
+      fallback: true,
+      error: null,
+    });
   });
 });
 

@@ -368,6 +368,8 @@ a {
 }
 
 .xiaou-answer {
+  display: grid;
+  gap: 6px;
   margin: 10px 0;
   border: 1px solid rgba(83, 209, 220, 0.22);
   border-radius: 8px;
@@ -377,6 +379,12 @@ a {
   font-size: 13px;
   font-weight: 800;
   line-height: 1.55;
+}
+
+.xiaou-answer small {
+  color: #5d8793;
+  font-size: 11px;
+  font-weight: 900;
 }
 
 .xiaou-chat-form {
@@ -412,6 +420,11 @@ a {
   font-size: 13px;
   font-weight: 900;
   background: linear-gradient(135deg, #1bb6e9, #27d9ba);
+}
+
+.xiaou-chat-form button:disabled {
+  cursor: wait;
+  opacity: 0.7;
 }
 
 .placeholder-content {

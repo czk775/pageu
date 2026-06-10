@@ -1,31 +1,8 @@
 import { motion } from 'framer-motion';
 import { useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-
-const assistantAnswers = [
-  {
-    keywords: ['怎么填写经历', '经历怎么填', '填写经历', '经历'],
-    answer: '建议描述背景、目标、行动、结果，我会帮你整理成适合个人网站展示的内容。',
-  },
-  {
-    keywords: ['JD是什么', 'jd是什么', '岗位描述', 'JD'],
-    answer: 'JD 是岗位描述，把目标岗位要求粘贴进来，我会根据岗位重点帮你组织展示内容。',
-  },
-  {
-    keywords: ['模板怎么选', '选择模板', '模板'],
-    answer: '模板只影响视觉风格，不影响你的经历内容。可以先选一个喜欢的，后面还可以调整。',
-  },
-  {
-    keywords: ['为什么要生成个人网站', '个人网站有什么用', '生成个人网站'],
-    answer: '个人网站比 PDF 更直观，可以把经历、项目、技能和作品集中展示，并生成链接和二维码分享。',
-  },
-  {
-    keywords: ['能不能重新修改', '重新修改', '还能修改', '修改'],
-    answer: '可以，生成后可以在编辑页继续调整内容、颜色、模块和模板。',
-  },
-];
-
-const fallbackAnswer = '我可以帮你理解填写、分析、编辑和发布流程，你可以问我“怎么填写经历”“模板怎么选”等问题。';
+import { answerAssistantQuestion } from '../services/ai/assistantChat';
+import { useCreateDraft } from '../state/CreateDraftContext';
 
 const pageGuides = {
   '/create': '我在创建页陪你整理信息，经历、JD、模板都可以问我。',
@@ -34,35 +11,37 @@ const pageGuides = {
   '/publish': '我可以帮你确认链接、二维码和访问权限。',
 };
 
-const getAnswer = (question) => {
-  const normalizedQuestion = question.trim().toLowerCase();
-  const matched = assistantAnswers.find((item) =>
-    item.keywords.some((keyword) => normalizedQuestion.includes(keyword.toLowerCase())),
-  );
-
-  return matched?.answer || fallbackAnswer;
-};
-
 export function FloatingAssistant({ hint = '有什么问题可以问我哦' }) {
   const { pathname } = useLocation();
+  const { createDraft } = useCreateDraft();
   const [chatOpen, setChatOpen] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
+  const [assistantMeta, setAssistantMeta] = useState(null);
+  const [chatStatus, setChatStatus] = useState('idle');
 
   const displayHint = hovered || chatOpen ? '有什么问题可以问我哦' : hint;
   const pageGuide = useMemo(() => pageGuides[pathname] || '我可以陪你走完整个 PageU 创建流程。', [pathname]);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!question.trim()) {
-      setAnswer(fallbackAnswer);
-      return;
-    }
-
-    setAnswer(getAnswer(question));
+    const currentQuestion = question.trim();
+    setChatStatus('loading');
+    setAnswer('');
+    setAssistantMeta(null);
     setQuestion('');
+
+    const result = await answerAssistantQuestion({
+      question: currentQuestion,
+      pathname,
+      createDraft,
+    });
+
+    setAnswer(result.answer);
+    setAssistantMeta(result.meta);
+    setChatStatus('idle');
   };
 
   return (
@@ -91,7 +70,13 @@ export function FloatingAssistant({ hint = '有什么问题可以问我哦' }) {
             </button>
           </div>
           <p>{pageGuide}</p>
-          {answer ? <div className="xiaou-answer">{answer}</div> : null}
+          {chatStatus === 'loading' ? <div className="xiaou-answer" role="status">小U 正在思考…</div> : null}
+          {answer ? (
+            <div className="xiaou-answer">
+              <span>{answer}</span>
+              {assistantMeta?.fallback ? <small>AI 暂不可用，已用本地引导回答</small> : null}
+            </div>
+          ) : null}
           <form className="xiaou-chat-form" onSubmit={handleSubmit}>
             <input
               aria-label="向小U提问"
@@ -100,8 +85,8 @@ export function FloatingAssistant({ hint = '有什么问题可以问我哦' }) {
               value={question}
               onChange={(event) => setQuestion(event.target.value)}
             />
-            <button type="submit" aria-label="发送问题">
-              发送
+            <button type="submit" aria-label="发送问题" disabled={chatStatus === 'loading'}>
+              {chatStatus === 'loading' ? '思考中' : '发送'}
             </button>
           </form>
         </motion.div>
