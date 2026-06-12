@@ -3,6 +3,15 @@ import { createEmptyExperience, createInitialDraft, DRAFT_STORAGE_KEY, normalize
 
 const CreateDraftContext = createContext(null);
 
+const stringifyDraft = (draft) =>
+  JSON.stringify(draft, (_key, value) => {
+    if (typeof File !== 'undefined' && value instanceof File) {
+      return undefined;
+    }
+
+    return value;
+  });
+
 const loadDraft = () => {
   if (typeof window === 'undefined') {
     return createInitialDraft();
@@ -24,7 +33,11 @@ export function CreateDraftProvider({ children }) {
       return;
     }
 
-    window.localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(createDraft));
+    try {
+      window.localStorage.setItem(DRAFT_STORAGE_KEY, stringifyDraft(createDraft));
+    } catch {
+      // Keep the in-memory draft usable even if large image previews exceed localStorage quota.
+    }
   }, [createDraft]);
 
   const actions = useMemo(

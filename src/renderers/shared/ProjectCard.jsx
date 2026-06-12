@@ -1,12 +1,19 @@
+import { useEffect, useState } from 'react';
 import { Link, useInRouterContext } from 'react-router-dom';
 import { AnimatedProjectArticle } from './PortfolioMotionContext';
 import { getInitial, splitActionPoints } from './portfolioUtils';
 
 export function ProjectCard({ project, featured = false, motionIndex = 0, tone = 'default', siteId = 'demo' }) {
+  const [imageFailed, setImageFailed] = useState(false);
   const projectPath = `/site/${siteId || 'demo'}/project/${project.id}`;
   const isInRouter = useInRouterContext();
   const ActionLink = isInRouter ? Link : 'a';
   const linkProps = isInRouter ? { to: projectPath } : { href: projectPath };
+  const shouldShowImage = Boolean(project.coverUrl) && !imageFailed;
+
+  useEffect(() => {
+    setImageFailed(false);
+  }, [project.coverUrl]);
 
   return (
     <AnimatedProjectArticle
@@ -14,8 +21,8 @@ export function ProjectCard({ project, featured = false, motionIndex = 0, tone =
       motionIndex={motionIndex}
     >
       <div className="portfolio-project-cover">
-        {project.coverUrl ? (
-          <img src={project.coverUrl} alt={`${project.title} 封面`} />
+        {shouldShowImage ? (
+          <img src={project.coverUrl} alt={`${project.title} 封面`} onError={() => setImageFailed(true)} />
         ) : (
           <div className="portfolio-project-cover-placeholder" aria-hidden="true">
             {getInitial(project.title)}

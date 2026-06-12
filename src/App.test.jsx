@@ -25,12 +25,39 @@ describe('siteDraft generation', () => {
     expect(normalized.basicInfo.personalTagline).toBe('AI产品｜用户研究｜把想法做成产品');
     expect(normalized.jobInfo.motivation).toBe('希望连接用户问题与 AI 能力。');
     expect(normalized.experiences[0]).toMatchObject({
+      coverName: '',
+      coverUrl: '',
       role: '',
       period: '',
+      summary: '',
       link: '',
     });
     expect(normalized.worksInfo.rawLinks).toContain('PageU Demo');
     expect(normalized.stylePreference).toBe('科技未来');
+  });
+
+  it('normalizes legacy experiences with complete cover and portfolio fields', () => {
+    const normalized = normalizeDraft({
+      experiences: [
+        {
+          id: 'legacy-2',
+          title: '旧经历',
+          description: '旧数据只有标题和描述。',
+        },
+      ],
+    });
+
+    expect(normalized.experiences[0]).toMatchObject({
+      id: 'legacy-2',
+      title: '旧经历',
+      coverName: '',
+      coverUrl: '',
+      link: '',
+      role: '',
+      period: '',
+      summary: '',
+      collapsed: false,
+    });
   });
 
   it('derives a siteDraft from createDraft and analysisResult', () => {
@@ -504,6 +531,82 @@ describe('PageU app shell', () => {
       expect(storedDraft.basicInfo.photoPreviewUrl).toContain('data:image/png;base64');
       expect(storedDraft.experiences[0].coverUrl).toContain('data:image/png;base64');
     });
+  });
+
+  it('uploads project covers for the first four experiences without mixing File objects into draft state', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={['/create']}>
+        <App />
+      </MemoryRouter>,
+    );
+
+    for (let index = 2; index <= 4; index += 1) {
+      await user.click(screen.getByRole('button', { name: '继续添加经历' }));
+      expect(screen.getByRole('group', { name: `经历${index}` })).toBeInTheDocument();
+    }
+
+    for (let index = 1; index <= 4; index += 1) {
+      await user.upload(screen.getByLabelText(`项目封面 ${index}`), new File([`cover-${index}`], `cover-${index}.png`, { type: 'image/png' }));
+    }
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 1, name: '告诉我你的经历' })).toBeInTheDocument();
+
+      for (let index = 1; index <= 4; index += 1) {
+        expect(screen.getByRole('img', { name: `项目封面预览 ${index}` })).toHaveAttribute('src', expect.stringContaining('data:image/png;base64'));
+      }
+
+      const storedDraft = JSON.parse(localStorage.getItem(DRAFT_STORAGE_KEY));
+      expect(storedDraft.experiences).toHaveLength(4);
+      storedDraft.experiences.forEach((experience, index) => {
+        expect(experience.coverUrl).toEqual(expect.stringContaining('data:image/png;base64'));
+        expect(experience.coverName).toBe(`cover-${index + 1}.png`);
+        expect(experience.coverFile).toBeUndefined();
+        expect(experience.file).toBeUndefined();
+      });
+    });
+  });
+
+  it('keeps the create page visible when autosave fails after uploading the second project cover', async () => {
+    const user = userEvent.setup();
+    const originalSetItem = Storage.prototype.setItem;
+    let shouldThrow = false;
+    const setItemSpy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(function setItem(key, value) {
+      if (shouldThrow && key === DRAFT_STORAGE_KEY) {
+        throw new DOMException('Draft storage quota exceeded', 'QuotaExceededError');
+      }
+
+      return originalSetItem.call(this, key, value);
+    });
+
+    try {
+      render(
+        <MemoryRouter initialEntries={['/create']}>
+          <App />
+        </MemoryRouter>,
+      );
+
+      await user.click(screen.getByRole('button', { name: '继续添加经历' }));
+      await user.click(screen.getByRole('button', { name: '继续添加经历' }));
+
+      await user.upload(screen.getByLabelText('项目封面 1'), new File(['first-cover'], 'first-cover.png', { type: 'image/png' }));
+      await waitFor(() => {
+        expect(screen.getByRole('img', { name: '项目封面预览 1' })).toBeInTheDocument();
+      });
+
+      shouldThrow = true;
+      await user.upload(screen.getByLabelText('项目封面 2'), new File(['second-cover'], 'second-cover.png', { type: 'image/png' }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('heading', { level: 1, name: '告诉我你的经历' })).toBeInTheDocument();
+        expect(screen.getByRole('group', { name: '经历2' })).toBeInTheDocument();
+        expect(screen.getByRole('img', { name: '项目封面预览 2' })).toHaveAttribute('src', expect.stringContaining('data:image/png;base64'));
+      });
+    } finally {
+      setItemSpy.mockRestore();
+    }
   });
 
   it('keeps createDraft values after navigation and routes generation to analyze', async () => {

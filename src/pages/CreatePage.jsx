@@ -16,6 +16,7 @@ const readImagePreview = (file, onLoad) => {
 
   const reader = new FileReader();
   reader.onload = () => onLoad(typeof reader.result === 'string' ? reader.result : '');
+  reader.onerror = () => onLoad('');
   reader.readAsDataURL(file);
 };
 
@@ -40,6 +41,7 @@ export function CreatePage() {
   };
 
   const handleProjectCoverChange = (experienceId, file) => {
+    updateExperience(experienceId, 'coverName', file?.name || '');
     readImagePreview(file, (previewUrl) => updateExperience(experienceId, 'coverUrl', previewUrl));
   };
 
@@ -180,6 +182,13 @@ export function CreatePage() {
           <div className="experience-list">
             {createDraft.experiences.map((experience, index) => {
               const number = index + 1;
+              const title = experience.title || '';
+              const role = experience.role || '';
+              const period = experience.period || '';
+              const summary = experience.summary || '';
+              const description = experience.description || '';
+              const coverUrl = typeof experience.coverUrl === 'string' ? experience.coverUrl : '';
+              const link = experience.link || '';
               return (
                 <fieldset className="experience-card" key={experience.id} aria-label={`经历${number}`}>
                   <legend>经历{number}</legend>
@@ -196,7 +205,7 @@ export function CreatePage() {
                     </button>
                   </div>
                   {experience.collapsed ? (
-                    <p className="experience-summary">{experience.title || '还没有填写标题'}</p>
+                    <p className="experience-summary">{title || '还没有填写标题'}</p>
                   ) : (
                     <div className="experience-fields">
                       <FormField id={`experience-title-${experience.id}`} label={`经历标题 ${number}`}>
@@ -204,7 +213,7 @@ export function CreatePage() {
                           id={`experience-title-${experience.id}`}
                           autoComplete="off"
                           type="text"
-                          value={experience.title}
+                          value={title}
                           onChange={(event) => updateExperience(experience.id, 'title', event.target.value)}
                         />
                       </FormField>
@@ -214,7 +223,7 @@ export function CreatePage() {
                             id={`experience-role-${experience.id}`}
                             autoComplete="off"
                             type="text"
-                            value={experience.role}
+                            value={role}
                             onChange={(event) => updateExperience(experience.id, 'role', event.target.value)}
                           />
                         </FormField>
@@ -223,7 +232,7 @@ export function CreatePage() {
                             id={`experience-period-${experience.id}`}
                             autoComplete="off"
                             type="text"
-                            value={experience.period}
+                            value={period}
                             onChange={(event) => updateExperience(experience.id, 'period', event.target.value)}
                           />
                         </FormField>
@@ -234,7 +243,7 @@ export function CreatePage() {
                           autoComplete="off"
                           placeholder="例如：为大学生求职场景设计 AI 简历优化体验"
                           type="text"
-                          value={experience.summary}
+                          value={summary}
                           onChange={(event) => updateExperience(experience.id, 'summary', event.target.value)}
                         />
                       </FormField>
@@ -243,7 +252,7 @@ export function CreatePage() {
                           id={`experience-description-${experience.id}`}
                           autoComplete="off"
                           rows={5}
-                          value={experience.description}
+                          value={description}
                           onChange={(event) => updateExperience(experience.id, 'description', event.target.value)}
                         />
                       </FormField>
@@ -255,8 +264,8 @@ export function CreatePage() {
                             accept="image/*"
                             onChange={(event) => handleProjectCoverChange(experience.id, event.target.files?.[0])}
                           />
-                          {experience.coverUrl ? (
-                            <img className="upload-preview-wide" src={experience.coverUrl} alt={`项目封面预览 ${number}`} />
+                          {coverUrl ? (
+                            <img className="upload-preview-wide" src={coverUrl} alt={`项目封面预览 ${number}`} />
                           ) : null}
                         </FormField>
                         <FormField id={`experience-link-${experience.id}`} label={`项目/作品链接 ${number}`}>
@@ -265,7 +274,7 @@ export function CreatePage() {
                             autoComplete="off"
                             placeholder="https://github.com/xxx 或 https://demo.xxx.com"
                             type="url"
-                            value={experience.link}
+                            value={link}
                             onChange={(event) => updateExperience(experience.id, 'link', event.target.value)}
                           />
                         </FormField>

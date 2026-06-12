@@ -1,10 +1,17 @@
+import { useEffect, useState } from 'react';
 import { PortfolioNav } from './PortfolioNav';
 import { getInitial } from './portfolioUtils';
 
 export function HeroSection({ siteDraft, variant = 'neo', aside = null }) {
+  const [avatarFailed, setAvatarFailed] = useState(false);
   const profile = siteDraft.profile || {};
   const hero = siteDraft.hero || {};
   const avatarAlt = `${profile.name || 'PageU 同学'} 的头像`;
+  const shouldShowAvatar = Boolean(profile.photoPreviewUrl) && !avatarFailed;
+
+  useEffect(() => {
+    setAvatarFailed(false);
+  }, [profile.photoPreviewUrl]);
 
   return (
     <section id="top" className={`portfolio-full-hero portfolio-full-hero-${variant}`} aria-label="Portfolio hero">
@@ -26,8 +33,8 @@ export function HeroSection({ siteDraft, variant = 'neo', aside = null }) {
         </div>
         <div className="portfolio-hero-visual portfolio-hero-bento-photo portfolio-avatar-float portfolio-reveal-visual">
           <div className="portfolio-avatar-frame">
-            {profile.photoPreviewUrl ? (
-              <img className="portfolio-avatar-image" src={profile.photoPreviewUrl} alt={avatarAlt} />
+            {shouldShowAvatar ? (
+              <img className="portfolio-avatar-image" src={profile.photoPreviewUrl} alt={avatarAlt} onError={() => setAvatarFailed(true)} />
             ) : (
               <div className="portfolio-avatar-fallback" aria-label={avatarAlt}>
                 {getInitial(profile.name)}

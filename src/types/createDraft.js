@@ -1,16 +1,19 @@
 export const DRAFT_STORAGE_KEY = 'pageu:createDraft';
 
-export const createEmptyExperience = (index = 1) => ({
+export const createInitialExperience = (index = 1) => ({
   id: `experience-${Date.now()}-${index}`,
   title: '',
   role: '',
   period: '',
   summary: '',
   description: '',
+  coverName: '',
   coverUrl: '',
   link: '',
   collapsed: false,
 });
+
+export const createEmptyExperience = createInitialExperience;
 
 export const createInitialDraft = () => ({
   basicInfo: {
@@ -45,6 +48,7 @@ export const createInitialDraft = () => ({
       period: '',
       summary: '',
       description: '',
+      coverName: '',
       coverUrl: '',
       link: '',
       collapsed: false,

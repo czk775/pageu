@@ -6,6 +6,15 @@ const fallbackProjectTitle = '校园项目经历';
 
 const clean = (value = '') => String(value || '').trim();
 
+const cleanPreviewUrl = (value = '') => {
+  if (typeof value !== 'string') {
+    return '';
+  }
+
+  const url = value.trim();
+  return /^(data:image\/|blob:|https?:\/\/)/i.test(url) ? url : '';
+};
+
 const splitListText = (value = '') =>
   clean(value)
     .split(/[、,，;；\n\r\t]+/)
@@ -53,7 +62,7 @@ const toProjects = (experiences = [], targetRole, analysisResult) => {
       period: clean(experience.period),
       summary: clean(experience.summary),
       description: clean(experience.description),
-      coverUrl: clean(experience.coverUrl),
+      coverUrl: cleanPreviewUrl(experience.coverUrl),
       link: clean(experience.link),
     }))
     .filter((experience) => experience.title || experience.summary || experience.description || experience.link || experience.coverUrl);
