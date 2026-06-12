@@ -8,9 +8,9 @@ export function PureTemplate({ siteDraft }) {
   return (
     <div className="portfolio-shell portfolio-shell-pure">
       <HeroSection siteDraft={siteDraft} variant="pure" />
-      <AboutSection siteDraft={siteDraft} />
-      <ProjectsSection siteDraft={siteDraft} layout="pure" title="Case Studies" />
       <ResumeSnapshot siteDraft={siteDraft} variant="pure" />
+      <ProjectsSection siteDraft={siteDraft} layout="pure" />
+      <AboutSection siteDraft={siteDraft} />
       <ContactSection siteDraft={siteDraft} variant="pure" />
     </div>
   );

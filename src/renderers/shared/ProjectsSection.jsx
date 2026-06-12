@@ -1,7 +1,7 @@
 import { ProjectCard } from './ProjectCard';
 import { AnimatedSection } from './PortfolioMotionContext';
 
-export function ProjectsSection({ siteDraft, layout = 'showcase', title = 'Featured Projects' }) {
+export function ProjectsSection({ siteDraft, layout = 'showcase', title = '精选项目' }) {
   const projects = siteDraft.projects || [];
   const siteId = siteDraft.meta?.siteId || 'demo';
   const [featuredProject, ...restProjects] = projects;

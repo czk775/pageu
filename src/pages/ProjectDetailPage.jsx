@@ -3,7 +3,7 @@ import { ArrowLeft, ArrowRight, ExternalLink } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { generateSiteDraft } from '../lib/draftGenerator';
 import { loadSiteDraft } from '../lib/storage';
-import { getInitial, getProjectFit, getProjectValue, splitActionPoints } from '../renderers/shared/portfolioUtils';
+import { getInitial, getProjectValue, splitActionPoints } from '../renderers/shared/portfolioUtils';
 import { useCreateDraft } from '../state/CreateDraftContext';
 import { createAnalysisResult } from '../types/analysisResult';
 
@@ -17,6 +17,8 @@ export function ProjectDetailPage() {
   const project = projects.find((item) => item.id === projectId) || projects[0];
   const currentIndex = Math.max(projects.findIndex((item) => item.id === project?.id), 0);
   const nextProject = projects[(currentIndex + 1) % Math.max(projects.length, 1)];
+  const star = project?.star || {};
+  const actionPoints = Array.isArray(star.action) && star.action.length ? star.action : splitActionPoints(project || {});
 
   if (!project) {
     return (
@@ -70,12 +72,6 @@ export function ProjectDetailPage() {
               ))}
             </div>
             <p className="project-detail-summary">{project.summary}</p>
-            {project.externalLink ? (
-              <a className="portfolio-link-button" href={project.externalLink} target="_blank" rel="noreferrer">
-                项目链接
-                <ExternalLink size={16} />
-              </a>
-            ) : null}
           </div>
         </section>
 
@@ -83,18 +79,18 @@ export function ProjectDetailPage() {
           <article>
             <span>01</span>
             <h2>项目背景</h2>
-            <p>{project.background || project.summary}</p>
+            <p>{star.situation || project.background || project.summary}</p>
           </article>
           <article>
             <span>02</span>
             <h2>我的目标</h2>
-            <p>{project.goal || '把真实经历整理成招聘方容易理解的作品集案例。'}</p>
+            <p>{star.task || project.goal || '把真实经历整理成招聘方容易理解的作品集案例。'}</p>
           </article>
           <article>
             <span>03</span>
-            <h2>做了什么</h2>
+            <h2>我的行动</h2>
             <ul>
-              {splitActionPoints(project).map((point) => (
+              {actionPoints.map((point) => (
                 <li key={point}>{point}</li>
               ))}
             </ul>
@@ -102,14 +98,24 @@ export function ProjectDetailPage() {
           <article>
             <span>04</span>
             <h2>产出结果</h2>
-            <p>{getProjectValue(project)}</p>
+            <p>{star.result || getProjectValue(project)}</p>
           </article>
           <article>
             <span>05</span>
             <h2>我学到了什么</h2>
-            <p>{getProjectFit(project)}</p>
+            <p>{project.learning || project.jdRelevance || '这个项目让我更熟悉从问题拆解、方案推进到结果表达的完整过程。'}</p>
           </article>
         </section>
+
+        {project.externalLink ? (
+          <section className="project-detail-links" aria-labelledby="project-links-title">
+            <h2 id="project-links-title">作品链接</h2>
+            <a className="portfolio-link-button" href={project.externalLink} target="_blank" rel="noreferrer">
+              查看作品
+              <ExternalLink size={16} />
+            </a>
+          </section>
+        ) : null}
 
         <section className="project-detail-bottom">
           {nextProject ? (

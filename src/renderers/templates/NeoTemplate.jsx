@@ -8,9 +8,9 @@ export function NeoTemplate({ siteDraft }) {
   return (
     <div className="portfolio-shell portfolio-shell-neo">
       <HeroSection siteDraft={siteDraft} variant="neo" />
-      <AboutSection siteDraft={siteDraft} framed />
-      <ProjectsSection siteDraft={siteDraft} layout="neo" />
       <ResumeSnapshot siteDraft={siteDraft} variant="neo" />
+      <ProjectsSection siteDraft={siteDraft} layout="neo" />
+      <AboutSection siteDraft={siteDraft} framed />
       <ContactSection siteDraft={siteDraft} variant="neo" />
     </div>
   );

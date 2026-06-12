@@ -117,14 +117,14 @@ export function CreatePage() {
                 onChange={(event) => updateBasicInfo('major', event.target.value)}
               />
             </FormField>
-            <FormField id="personal-tagline" label="个人标签 / 一句话定位">
-              <input
-                id="personal-tagline"
+            <FormField id="self-intro" label="自我介绍">
+              <textarea
+                id="self-intro"
                 autoComplete="off"
-                placeholder="例如：AI产品 × 用户研究 × 喜欢把想法做成产品"
-                type="text"
-                value={createDraft.basicInfo.personalTagline}
-                onChange={(event) => updateBasicInfo('personalTagline', event.target.value)}
+                placeholder="例如：我关注 AI 产品、用户洞察与商业创新，希望把技术理解转化为真实产品价值。"
+                rows={4}
+                value={createDraft.basicInfo.selfIntro}
+                onChange={(event) => updateBasicInfo('selfIntro', event.target.value)}
               />
             </FormField>
           </div>

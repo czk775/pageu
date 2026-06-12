@@ -1137,3 +1137,85 @@ Browser smoke:
 ```text
 fix: polish portfolio output content and contact model
 ```
+
+## Phase 8.5 — 演示友好与个人网站内容结构修正
+
+### 完成内容
+
+- `/create` 删除“个人标签 / 一句话定位”输入，新增“自我介绍”字段。
+- `createDraft.basicInfo.selfIntro` 新增并兼容旧 `personalTagline` 数据。
+- “创建新的个人网站”在演示阶段不再清空 `createDraft/siteDraft/publishDraft`，只跳转 `/create`，方便比赛演示时保留上一轮输入。
+- `draftGenerator` 增加 `profile.photoUrl`，保持 `photoPreviewUrl -> siteDraft.profile.photoUrl -> TemplateRenderer` 的真实头像传递链路。
+- 最终个人网站信息架构调整为：Hero → 简历摘要 → 精选项目 → 关于我 → 联系我。
+- 最终网站主标题改为中文：`简历摘要`、`精选项目`，不再展示 `Resume Snapshot`、`Featured Projects` 等英文主标题。
+- 项目卡片进一步简化，只展示封面、项目名、角色、时间、简介、标签和“查看项目”入口，不再展示 STAR 详情。
+- 项目详情页保留自然 STAR 结构：`项目背景`、`我的目标`、`我的行动`、`产出结果`、`我学到了什么`。
+- 项目详情页仅在项目本身存在链接时展示 `作品链接` 区域。
+- `/editor` 预览、`/publish` 预览、`/site/:id` 和 `/site/:id/project/:projectId` 共享同一套渲染结果。
+
+### 数据与兼容策略
+
+- `basicInfo.selfIntro` 是新的创建页输入字段。
+- `basicInfo.personalTagline` 保留在数据结构中，仅用于旧 localStorage 兼容。
+- 旧数据如果没有 `selfIntro`，会自动用 `personalTagline` 补齐。
+- `siteDraft.profile.photoUrl` 优先使用上传照片的 data URL；没有照片时仍使用渐变占位。
+- `siteDraft.projects[].star` 保存项目详情页使用的结构化内容，不在首页项目卡片展开。
+
+### 演示新建策略
+
+- `resetPageUState()` 和 `resetDraft()` 没有删除。
+- Phase 8.5 中 `/publish` 与 `/site/:id` 的“创建新的个人网站”按钮只执行 `navigate('/create')`。
+- 代码中已保留注释：正式产品版本可以恢复清空逻辑；当前比赛演示阶段优先避免误删输入。
+
+### 本阶段新增/修改文件
+
+- `src/App.test.jsx`
+- `src/types/createDraft.js`
+- `src/types/siteDraft.js`
+- `src/lib/draftGenerator.js`
+- `src/pages/CreatePage.jsx`
+- `src/pages/GeneratedSitePage.jsx`
+- `src/pages/ProjectDetailPage.jsx`
+- `src/pages/PublishPage.jsx`
+- `src/renderers/shared/HeroSection.jsx`
+- `src/renderers/shared/ProjectCard.jsx`
+- `src/renderers/shared/ProjectsSection.jsx`
+- `src/renderers/shared/ResumeSnapshot.jsx`
+- `src/renderers/shared/portfolioUtils.js`
+- `src/renderers/templates/CanvasTemplate.jsx`
+- `src/renderers/templates/FlowTemplate.jsx`
+- `src/renderers/templates/GlassTemplate.jsx`
+- `src/renderers/templates/GridTemplate.jsx`
+- `src/renderers/templates/NeoTemplate.jsx`
+- `src/renderers/templates/PureTemplate.jsx`
+- `docs/HANDOFF.md`
+
+### 测试结果
+
+```text
+Vitest: 44 tests passed
+Vite build: success
+Browser smoke:
+- /create 显示“自我介绍”，不显示“个人标签 / 一句话定位”
+- /site/demo 显示“简历摘要”“精选项目”，不显示英文主标题
+- /site/demo 项目卡片不再展示 STAR bullet
+- /site/demo/project/project-1 显示“项目背景 / 我的目标 / 我的行动 / 产出结果”
+```
+
+### 当前未完成
+
+- 当前仍是前端 Demo，图片用 data URL 存在 localStorage，不适合生产长期存储。
+- 项目详情内容仍由前端规则从经历描述派生，后续可接入更细的 AI 案例整理能力。
+- “创建新的个人网站”的正式清空策略需要在演示结束后按产品版本决定是否恢复。
+
+### 下一阶段建议
+
+- 针对演示材料准备一组默认样例数据，减少现场手填成本。
+- 给最终网站增加一轮移动端真实设备视觉验收。
+- 如果进入部署阶段，优先处理图片持久化和 AI Key 后端代理。
+
+### Git commit
+
+```text
+fix: align portfolio content structure for demo
+```

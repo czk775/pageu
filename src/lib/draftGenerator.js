@@ -53,6 +53,47 @@ const buildProjectActions = (description) => {
   return ['梳理项目目标与用户场景', '推进方案设计与内容表达', '沉淀可展示的项目成果'];
 };
 
+const stripStarLabel = (value = '') =>
+  clean(value).replace(/^(项目背景|背景|我的目标|目标|任务|我的行动|行动|做了什么|产出结果|结果|成果)[:：]\s*/u, '');
+
+const findStarPart = (description = '', labels = []) => {
+  const text = clean(description);
+  for (const label of labels) {
+    const pattern = new RegExp(`${label}[:：]\\s*([\\s\\S]*?)(?=(项目背景|背景|我的目标|目标|任务|我的行动|行动|做了什么|产出结果|结果|成果)[:：]|$)`, 'u');
+    const match = text.match(pattern);
+    if (match?.[1]) {
+      return stripStarLabel(match[1]);
+    }
+  }
+  return '';
+};
+
+const buildProjectStory = (experience, title, targetRole) => {
+  const sentences = splitSentences(experience.description).map(stripStarLabel).filter(Boolean);
+  const situation =
+    findStarPart(experience.description, ['项目背景', '背景']) ||
+    sentences[0] ||
+    `围绕 ${targetRole} 的真实场景，梳理项目背景、用户需求和关键问题。`;
+  const task =
+    findStarPart(experience.description, ['我的目标', '目标', '任务']) ||
+    sentences[1] ||
+    `把「${title}」整理成访问者容易理解的作品集案例。`;
+  const actionText = findStarPart(experience.description, ['我的行动', '行动', '做了什么']);
+  const actions = actionText ? splitSentences(actionText).map(stripStarLabel).filter(Boolean).slice(0, 3) : sentences.slice(2, 5);
+  const result =
+    findStarPart(experience.description, ['产出结果', '结果', '成果']) ||
+    (sentences.length > 5 ? sentences[5] : '') ||
+    experience.summary ||
+    '沉淀出可以展示的过程、方法和阶段性成果。';
+
+  return {
+    situation,
+    task,
+    actions: actions.length ? actions : buildProjectActions(experience.description),
+    result,
+  };
+};
+
 const toProjects = (experiences = [], targetRole, analysisResult) => {
   const filled = experiences
     .map((experience) => ({
@@ -85,7 +126,8 @@ const toProjects = (experiences = [], targetRole, analysisResult) => {
   return source.map((experience, index) => {
     const title = experience.title || `项目经历 ${index + 1}`;
     const role = experience.role || '项目参与者';
-    const actions = buildProjectActions(experience.description);
+    const story = buildProjectStory(experience, title, targetRole);
+    const actions = story.actions;
     const summary = experience.summary || splitSentences(experience.description)[0] || `围绕「${title}」沉淀了一段完整的项目实践。`;
 
     return {
@@ -98,11 +140,18 @@ const toProjects = (experiences = [], targetRole, analysisResult) => {
       coverUrl: experience.coverUrl,
       externalLink: experience.link,
       link: experience.link,
-      background: experience.description || `围绕 ${targetRole} 的真实场景，梳理项目背景、用户需求和关键问题。`,
-      goal: `让项目目标、个人角色和产出价值被清晰地看见。`,
+      background: story.situation,
+      goal: story.task,
       actions,
-      result: experience.description ? '形成了清晰的项目叙事、关键行动和可展示成果。' : '完成了项目经历的初步梳理。',
-      jdRelevance: `这段经历体现了我对 ${targetRole} 所需能力的理解，也训练了沟通、拆解和落地能力。`,
+      result: story.result,
+      learning: `这段项目让我更理解 ${targetRole} 需要的问题拆解、沟通表达和落地推进能力。`,
+      jdRelevance: `这段项目让我更理解 ${targetRole} 需要的问题拆解、沟通表达和落地推进能力。`,
+      star: {
+        situation: story.situation,
+        task: story.task,
+        action: actions,
+        result: story.result,
+      },
       tags: pickTags(experience, analysisResult),
     };
   });
@@ -190,6 +239,7 @@ export const generateSiteDraft = (createDraft, analysisResult = createAnalysisRe
   const major = clean(createDraft?.basicInfo?.major);
   const school = clean(createDraft?.basicInfo?.school);
   const personalTagline = clean(createDraft?.basicInfo?.personalTagline);
+  const selfIntro = clean(createDraft?.basicInfo?.selfIntro) || personalTagline;
   const targetRole = extractTargetRole(createDraft?.jobInfo?.jd);
   const motivation = clean(createDraft?.jobInfo?.motivation);
   const template = createDraft?.template || 'neo';
@@ -203,13 +253,13 @@ export const generateSiteDraft = (createDraft, analysisResult = createAnalysisRe
   const experienceStory = toExperienceStory(projects);
   const intro =
     motivation ||
-    personalTagline ||
+    selfIntro ||
     (major ? `${major}背景，正在面向 ${targetRole} 打造个人网站。` : `正在面向 ${targetRole} 打造个人网站。`);
   const highlights = buildHighlights(createDraft, analysisResult, projects, skills);
   const legacyContact = clean(createDraft?.basicInfo?.contact);
   const phone = clean(createDraft?.basicInfo?.phone) || (/^\+?[\d\s-]{6,}$/.test(legacyContact) ? legacyContact : '');
   const email = clean(createDraft?.basicInfo?.email) || (legacyContact.includes('@') ? legacyContact : '');
-  const photoPreviewUrl = clean(createDraft?.basicInfo?.photoPreviewUrl);
+  const photoPreviewUrl = cleanPreviewUrl(createDraft?.basicInfo?.photoPreviewUrl);
   const resumeSnapshot = buildResumeSnapshot(createDraft, projects, skills, certificates);
 
   const sectionMap = {
@@ -266,13 +316,15 @@ export const generateSiteDraft = (createDraft, analysisResult = createAnalysisRe
       school,
       major,
       photoName: createDraft?.basicInfo?.photoName || '',
+      photoUrl: photoPreviewUrl,
       photoPreviewUrl,
+      selfIntro,
       personalTagline,
     },
     hero: {
       eyebrow: major ? `${major}背景｜${targetRole}` : `个人主页｜${targetRole}`,
       title: name,
-      subtitle: personalTagline || intro,
+      subtitle: selfIntro || intro,
       primaryCta: '查看项目',
       secondaryCta: '联系我',
     },

@@ -25,6 +25,7 @@ export const createInitialDraft = () => ({
     email: '',
     school: '',
     major: '',
+    selfIntro: '',
     personalTagline: '',
   },
   jobInfo: {
@@ -76,6 +77,10 @@ export const normalizeDraft = (draft) => {
     ...initialDraft.basicInfo,
     ...draft.basicInfo,
   };
+
+  if (!basicInfo.selfIntro && basicInfo.personalTagline) {
+    basicInfo.selfIntro = basicInfo.personalTagline;
+  }
 
   if (!basicInfo.email && legacyEmail) {
     basicInfo.email = legacyEmail;

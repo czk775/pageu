@@ -8,9 +8,9 @@ export function GlassTemplate({ siteDraft }) {
   return (
     <div className="portfolio-shell portfolio-shell-glass">
       <HeroSection siteDraft={siteDraft} variant="glass" />
-      <AboutSection siteDraft={siteDraft} framed />
-      <ProjectsSection siteDraft={siteDraft} layout="glass" />
       <ResumeSnapshot siteDraft={siteDraft} variant="glass" />
+      <ProjectsSection siteDraft={siteDraft} layout="glass" />
+      <AboutSection siteDraft={siteDraft} framed />
       <ContactSection siteDraft={siteDraft} variant="glass" />
     </div>
   );

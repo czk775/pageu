@@ -9,10 +9,10 @@ export function FlowTemplate({ siteDraft }) {
     <div className="portfolio-shell portfolio-shell-flow">
       <div className="portfolio-flow-intro">
         <HeroSection siteDraft={siteDraft} variant="flow" />
-        <AboutSection siteDraft={siteDraft} framed />
       </div>
-      <ProjectsSection siteDraft={siteDraft} layout="flow" title="Stories & Projects" />
       <ResumeSnapshot siteDraft={siteDraft} variant="flow" />
+      <ProjectsSection siteDraft={siteDraft} layout="flow" />
+      <AboutSection siteDraft={siteDraft} framed />
       <ContactSection siteDraft={siteDraft} variant="flow" />
     </div>
   );

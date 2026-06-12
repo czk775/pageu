@@ -2,12 +2,13 @@ export const getInitial = (name = '') => String(name || 'U').trim().slice(0, 1).
 
 export const getAboutCopy = (siteDraft) => {
   const profile = siteDraft.profile || {};
-  const intro = profile.intro || siteDraft.hero?.subtitle || '';
   const schoolLine = [profile.school, profile.major].filter(Boolean).join(' / ');
-  const roleLine = profile.targetRole ? `目标方向是 ${profile.targetRole}。` : '';
+  const skills = (siteDraft.skills || []).slice(0, 3).join('、');
+  const roleLine = profile.targetRole ? `目标方向：${profile.targetRole}。` : '';
   const identityLine = schoolLine ? `${schoolLine} 背景。` : '';
+  const skillLine = skills ? `关注 ${skills} 等能力在项目中的真实落地。` : '';
 
-  return [intro, identityLine, roleLine].filter(Boolean).slice(0, 3);
+  return [identityLine, roleLine, skillLine].filter(Boolean).slice(0, 3);
 };
 
 export const splitActionPoints = (project) => {

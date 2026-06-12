@@ -49,7 +49,14 @@ const normalizeProject = (project = {}, index = 0) => ({
     ? project.actions
     : [project.action, project.problem, project.summary].filter(Boolean).slice(0, 3),
   result: project.result || '',
+  learning: project.learning || project.jdRelevance || '',
   jdRelevance: project.jdRelevance || '',
+  star: {
+    situation: project.star?.situation || project.background || project.problem || project.description || '',
+    task: project.star?.task || project.goal || '',
+    action: normalizeArray(project.star?.action || project.actions),
+    result: project.star?.result || project.result || '',
+  },
   tags: normalizeArray(project.tags),
 });
 
@@ -70,7 +77,9 @@ export const normalizeSiteDraft = (siteDraft) => {
       school: '',
       major: '',
       photoName: '',
+      photoUrl: '',
       photoPreviewUrl: '',
+      selfIntro: '',
       personalTagline: '',
       ...siteDraft.profile,
     },

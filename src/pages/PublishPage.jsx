@@ -8,7 +8,7 @@ import { GlassCard } from '../components/GlassCard';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { StatusToast } from '../components/StatusToast';
 import { generateSiteDraft } from '../lib/draftGenerator';
-import { loadPublishDraft, loadSiteDraft, PUBLIC_SITE_PATH, resetPageUState, savePublishDraft, toSvgDataUrl } from '../lib/storage';
+import { loadPublishDraft, loadSiteDraft, PUBLIC_SITE_PATH, savePublishDraft, toSvgDataUrl } from '../lib/storage';
 import { TemplateRenderer } from '../renderers/TemplateRenderer';
 import { useCreateDraft } from '../state/CreateDraftContext';
 import { createAnalysisResult } from '../types/analysisResult';
@@ -16,7 +16,7 @@ import { createPublishDraft, PUBLISH_STORAGE_KEY } from '../types/publishDraft';
 
 export function PublishPage() {
   const navigate = useNavigate();
-  const { createDraft, resetDraft } = useCreateDraft();
+  const { createDraft } = useCreateDraft();
   const analysisResult = useMemo(() => createAnalysisResult(createDraft), [createDraft]);
   const generatedDraft = useMemo(() => generateSiteDraft(createDraft, analysisResult), [analysisResult, createDraft]);
   const siteDraft = useMemo(() => loadSiteDraft(generatedDraft), [generatedDraft]);
@@ -97,8 +97,8 @@ export function PublishPage() {
   };
 
   const handleCreateNewSite = () => {
-    resetPageUState();
-    resetDraft();
+    // Demo stage: keep current inputs and published draft so presenters can return without re-entering content.
+    // The retained resetPageUState/resetDraft utilities can be restored for a production "fresh start" action.
     navigate('/create');
   };
 
