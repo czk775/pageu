@@ -4,6 +4,7 @@ import { CreatePage } from './pages/CreatePage';
 import { EditorPage } from './pages/EditorPage';
 import { GeneratedSitePage } from './pages/GeneratedSitePage';
 import { HomePage } from './pages/HomePage';
+import { ProjectDetailPage } from './pages/ProjectDetailPage';
 import { PublishPage } from './pages/PublishPage';
 import { CreateDraftProvider } from './state/CreateDraftContext';
 
@@ -16,6 +17,7 @@ export default function App() {
         <Route path="/analyze" element={<AnalyzePage />} />
         <Route path="/editor" element={<EditorPage />} />
         <Route path="/publish" element={<PublishPage />} />
+        <Route path="/site/:id/project/:projectId" element={<ProjectDetailPage />} />
         <Route path="/site/:id" element={<GeneratedSitePage />} />
       </Routes>
     </CreateDraftProvider>

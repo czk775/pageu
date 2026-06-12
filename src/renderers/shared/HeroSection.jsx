@@ -4,10 +4,11 @@ import { getInitial } from './portfolioUtils';
 export function HeroSection({ siteDraft, variant = 'neo', aside = null }) {
   const profile = siteDraft.profile || {};
   const hero = siteDraft.hero || {};
+  const avatarAlt = `${profile.name || 'PageU 同学'} 的头像`;
 
   return (
-    <section className={`portfolio-full-hero portfolio-full-hero-${variant}`} aria-label="Portfolio hero">
-      <PortfolioNav />
+    <section id="top" className={`portfolio-full-hero portfolio-full-hero-${variant}`} aria-label="Portfolio hero">
+      <PortfolioNav name={profile.name || hero.title} />
       <div className="portfolio-hero-layout">
         <div className="portfolio-hero-content">
           <p className="portfolio-hero-kicker">{hero.eyebrow || 'Personal Portfolio'}</p>
@@ -23,15 +24,23 @@ export function HeroSection({ siteDraft, variant = 'neo', aside = null }) {
             </a>
           </div>
         </div>
-        <div className="portfolio-hero-visual" aria-hidden="true">
-          <div className="portfolio-avatar-orb">{getInitial(profile.name)}</div>
+        <div className="portfolio-hero-visual portfolio-avatar-float">
+          <div className="portfolio-avatar-frame">
+            {profile.photoPreviewUrl ? (
+              <img className="portfolio-avatar-image" src={profile.photoPreviewUrl} alt={avatarAlt} />
+            ) : (
+              <div className="portfolio-avatar-fallback" aria-label={avatarAlt}>
+                {getInitial(profile.name)}
+              </div>
+            )}
+          </div>
           <div className="portfolio-visual-card">
             <span>Focus</span>
             <strong>{profile.targetRole || 'Portfolio'}</strong>
           </div>
           <div className="portfolio-visual-card muted">
-            <span>Style</span>
-            <strong>{siteDraft.stylePreference || siteDraft.template || 'PageU'}</strong>
+            <span>Template</span>
+            <strong>{siteDraft.template || 'PageU'}</strong>
           </div>
         </div>
         {aside}

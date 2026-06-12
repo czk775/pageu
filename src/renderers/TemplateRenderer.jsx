@@ -61,13 +61,10 @@ export function TemplateRenderer({
         '--generated-text': normalizedDraft.theme.textColor,
       }}
     >
-      <motion.div
-        className={isPreview ? 'portfolio-preview-scale' : 'portfolio-site-canvas'}
-        initial={initial}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.46 }}
-      >
-        <Template siteDraft={normalizedDraft} />
+      <motion.div className="portfolio-motion-layer" initial={initial} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.46 }}>
+        <div className={isPreview ? 'portfolio-preview-scale' : 'portfolio-site-canvas'}>
+          <Template siteDraft={normalizedDraft} />
+        </div>
       </motion.div>
     </Surface>
   );

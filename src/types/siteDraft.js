@@ -33,6 +33,26 @@ export const createSection = (type, overrides = {}) => ({
 
 const normalizeArray = (value) => (Array.isArray(value) ? value : []);
 
+const normalizeProject = (project = {}, index = 0) => ({
+  id: project.id || `project-${index + 1}`,
+  sourceExperienceId: project.sourceExperienceId || '',
+  title: project.title || `项目 ${index + 1}`,
+  role: project.role || '',
+  period: project.period || '',
+  summary: project.summary || project.description || '',
+  coverUrl: project.coverUrl || '',
+  externalLink: project.externalLink || project.link || '',
+  link: project.externalLink || project.link || '',
+  background: project.background || project.problem || project.description || '',
+  goal: project.goal || '',
+  actions: normalizeArray(project.actions).length
+    ? project.actions
+    : [project.action, project.problem, project.summary].filter(Boolean).slice(0, 3),
+  result: project.result || '',
+  jdRelevance: project.jdRelevance || '',
+  tags: normalizeArray(project.tags),
+});
+
 export const normalizeSiteDraft = (siteDraft) => {
   if (!siteDraft || typeof siteDraft !== 'object') {
     return null;
@@ -48,6 +68,7 @@ export const normalizeSiteDraft = (siteDraft) => {
       school: '',
       major: '',
       photoName: '',
+      photoPreviewUrl: '',
       personalTagline: '',
       ...siteDraft.profile,
     },
@@ -60,11 +81,22 @@ export const normalizeSiteDraft = (siteDraft) => {
       ...siteDraft.hero,
     },
     highlights: normalizeArray(siteDraft.highlights),
-    projects: normalizeArray(siteDraft.projects),
+    projects: normalizeArray(siteDraft.projects).map(normalizeProject),
     experienceStory: normalizeArray(siteDraft.experienceStory),
     skills: normalizeArray(siteDraft.skills),
     certificates: normalizeArray(siteDraft.certificates),
     works: normalizeArray(siteDraft.works),
+    resumeSnapshot: {
+      school: siteDraft.profile?.school || '',
+      major: siteDraft.profile?.major || '',
+      skills: normalizeArray(siteDraft.skills),
+      certificates: normalizeArray(siteDraft.certificates),
+      timeline: normalizeArray(siteDraft.experienceStory),
+      ...siteDraft.resumeSnapshot,
+      skills: normalizeArray(siteDraft.resumeSnapshot?.skills || siteDraft.skills),
+      certificates: normalizeArray(siteDraft.resumeSnapshot?.certificates || siteDraft.certificates),
+      timeline: normalizeArray(siteDraft.resumeSnapshot?.timeline || siteDraft.experienceStory),
+    },
     contact: {
       email: '',
       phone: '',

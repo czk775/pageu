@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
@@ -72,6 +72,7 @@ describe('siteDraft generation', () => {
     createDraft.basicInfo.school = '南山大学';
     createDraft.basicInfo.major = '数字媒体技术';
     createDraft.basicInfo.personalTagline = 'AI产品｜用户研究｜把想法做成产品';
+    createDraft.basicInfo.photoPreviewUrl = 'data:image/png;base64,avatar-preview';
     createDraft.jobInfo.jd = '用户体验设计实习生，负责用户研究和原型设计。';
     createDraft.jobInfo.motivation = '希望把用户问题转化为可以落地的 AI 产品体验。';
     createDraft.experiences = [
@@ -80,7 +81,9 @@ describe('siteDraft generation', () => {
         title: 'AI 简历优化项目',
         role: '产品设计负责人',
         period: '2025.09 - 2025.12',
+        summary: '为大学生求职场景设计 AI 简历优化体验。',
         description: '调研同学求职痛点，设计简历分析和建议生成流程，完成可演示原型。',
+        coverUrl: 'data:image/png;base64,project-cover',
         link: 'https://example.com/demo',
         collapsed: false,
       },
@@ -93,6 +96,7 @@ describe('siteDraft generation', () => {
     const siteDraft = generateSiteDraft(createDraft, createAnalysisResult(createDraft));
 
     expect(siteDraft.profile.personalTagline).toBe('AI产品｜用户研究｜把想法做成产品');
+    expect(siteDraft.profile.photoPreviewUrl).toBe('data:image/png;base64,avatar-preview');
     expect(siteDraft.hero).toMatchObject({
       title: '陈一诺',
       primaryCta: '查看项目',
@@ -104,7 +108,13 @@ describe('siteDraft generation', () => {
       title: 'AI 简历优化项目',
       role: '产品设计负责人',
       period: '2025.09 - 2025.12',
-      link: 'https://example.com/demo',
+      coverUrl: 'data:image/png;base64,project-cover',
+      externalLink: 'https://example.com/demo',
+    });
+    expect(siteDraft.projects[0].actions.length).toBeGreaterThan(0);
+    expect(siteDraft.resumeSnapshot).toMatchObject({
+      school: '南山大学',
+      major: '数字媒体技术',
     });
     expect(siteDraft.projects[0].summary).not.toBe(createDraft.experiences[0].description);
     expect(siteDraft.projects[0].tags.length).toBeGreaterThanOrEqual(3);
@@ -132,7 +142,7 @@ describe('siteDraft generation', () => {
     const siteDraft = generateSiteDraft(createDraft);
 
     render(<TemplateRenderer siteDraft={siteDraft} />);
-    expect(screen.getByRole('link', { name: '查看作品' })).toHaveAttribute('href', 'https://example.com');
+    expect(screen.getByRole('link', { name: '作品链接' })).toHaveAttribute('href', 'https://example.com');
 
     const templateClasses = ['neo', 'pure', 'flow', 'grid', 'canvas', 'glass'].map((template) => {
       const { container, unmount } = render(<TemplateRenderer siteDraft={{ ...siteDraft, template }} />);
@@ -160,6 +170,7 @@ describe('siteDraft generation', () => {
     rerender(<TemplateRenderer mode="preview" previewMode="mobile" siteDraft={siteDraft} />);
     expect(container.firstChild).toHaveClass('portfolio-preview-mode');
     expect(container.querySelector('.portfolio-preview-scale')).toBeInTheDocument();
+    expect(container.querySelector('.portfolio-preview-scale').getAttribute('style') || '').not.toContain('transform');
   });
 
   it('renders portfolio hero navigation and CTA links', () => {
@@ -170,11 +181,13 @@ describe('siteDraft generation', () => {
 
     render(<TemplateRenderer as="main" mode="site" siteDraft={siteDraft} />);
 
-    expect(screen.getByRole('navigation', { name: 'Portfolio navigation' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'About' })).toHaveAttribute('href', '#about');
-    expect(screen.getByRole('link', { name: 'Projects' })).toHaveAttribute('href', '#featured-projects');
-    expect(screen.getByRole('link', { name: '查看项目' })).toHaveAttribute('href', '#featured-projects');
-    expect(screen.getByRole('link', { name: '联系我' })).toHaveAttribute('href', '#contact');
+    const nav = screen.getByRole('navigation', { name: 'Portfolio navigation' });
+    expect(nav).toBeInTheDocument();
+    expect(within(nav).getByRole('link', { name: '关于我' })).toHaveAttribute('href', '#about');
+    expect(within(nav).getByRole('link', { name: '项目' })).toHaveAttribute('href', '#featured-projects');
+    expect(within(nav).getByRole('link', { name: '简历' })).toHaveAttribute('href', '#resume');
+    expect(screen.getAllByRole('link', { name: '查看项目' }).some((link) => link.getAttribute('href') === '#featured-projects')).toBe(true);
+    expect(screen.getAllByRole('link', { name: '联系我' }).some((link) => link.getAttribute('href') === '#contact')).toBe(true);
   });
 
   it('renders ProjectCard as portfolio case content instead of narrow Problem Action Result columns', () => {
@@ -194,14 +207,44 @@ describe('siteDraft generation', () => {
 
     const { container } = render(<TemplateRenderer mode="site" siteDraft={siteDraft} />);
 
-    expect(screen.getByText('我做了什么')).toBeInTheDocument();
-    expect(screen.getByText('产出与价值')).toBeInTheDocument();
-    expect(screen.getByText('岗位关联')).toBeInTheDocument();
+    expect(screen.queryByText('我做了什么')).not.toBeInTheDocument();
+    expect(screen.queryByText('产出与价值')).not.toBeInTheDocument();
+    expect(screen.queryByText('岗位关联')).not.toBeInTheDocument();
     expect(container.querySelector('.portfolio-project-points')).not.toBeInTheDocument();
     expect(screen.queryByText('Problem')).not.toBeInTheDocument();
     expect(screen.queryByText('Action')).not.toBeInTheDocument();
     expect(screen.queryByText('Result')).not.toBeInTheDocument();
-    expect(screen.getAllByRole('link', { name: '查看项目' }).some((link) => link.getAttribute('href') === 'https://example.com/case')).toBe(true);
+    expect(screen.getAllByRole('link', { name: '查看项目' }).some((link) => link.getAttribute('href') === '/site/demo/project/project-1')).toBe(true);
+  });
+
+  it('renders real avatar and project cover images in the generated portfolio site', () => {
+    const createDraft = createInitialDraft();
+    createDraft.basicInfo.name = '陈一诺';
+    createDraft.basicInfo.photoPreviewUrl = 'data:image/png;base64,avatar-preview';
+    createDraft.experiences = [
+      {
+        id: 'experience-cover',
+        title: 'AI 简历优化项目',
+        role: '产品设计负责人',
+        period: '2026',
+        summary: '把求职经历转化成个人网站。',
+        description: '调研同学求职痛点，设计输入流程。',
+        coverUrl: 'data:image/png;base64,project-cover',
+        link: 'https://example.com/demo',
+        collapsed: false,
+      },
+    ];
+    const siteDraft = generateSiteDraft(createDraft);
+    localStorage.setItem(SITE_DRAFT_STORAGE_KEY, JSON.stringify(siteDraft));
+
+    render(
+      <MemoryRouter initialEntries={['/site/demo']}>
+        <App />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole('img', { name: '陈一诺 的头像' })).toHaveAttribute('src', 'data:image/png;base64,avatar-preview');
+    expect(screen.getByRole('img', { name: 'AI 简历优化项目 封面' })).toHaveAttribute('src', 'data:image/png;base64,project-cover');
   });
 });
 
@@ -327,13 +370,15 @@ describe('PageU app shell', () => {
     expect(screen.getByLabelText('我的角色 1')).toBeInTheDocument();
     expect(screen.getByLabelText('时间 / 阶段 1')).toBeInTheDocument();
     expect(screen.getByLabelText('项目/作品链接 1')).toBeInTheDocument();
+    expect(screen.getByLabelText('项目封面 1')).toBeInTheDocument();
+    expect(screen.getByLabelText('项目一句话简介 1')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: '技能证书' })).toBeInTheDocument();
     expect(screen.getByPlaceholderText('React、Python、SQL、Axure、用户研究、产品设计')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('英语六级、奖学金、竞赛奖项、优秀学生干部')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: '作品 / 项目链接' })).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: '作品 / 项目链接' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 2, name: '你希望网站给人的感觉' })).toBeInTheDocument();
-    expect(screen.getByRole('radio', { name: '科技未来' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { level: 2, name: '你希望网站给人的感觉' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('radio', { name: '科技未来' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: '生成我的个人网站' })).toBeInTheDocument();
 
     for (const template of ['Neo', 'Pure', 'Flow', 'Grid', 'Canvas', 'Glass']) {
@@ -367,6 +412,25 @@ describe('PageU app shell', () => {
     await user.click(screen.getByRole('radio', { name: 'Glass' }));
     expect(screen.getByRole('radio', { name: 'Glass' })).toBeChecked();
     expect(screen.getByRole('radio', { name: 'Neo' })).not.toBeChecked();
+  });
+
+  it('stores uploaded avatar and project cover previews in createDraft', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={['/create']}>
+        <App />
+      </MemoryRouter>,
+    );
+
+    await user.upload(screen.getByLabelText('照片'), new File(['avatar'], 'avatar.png', { type: 'image/png' }));
+    await user.upload(screen.getByLabelText('项目封面 1'), new File(['cover'], 'cover.png', { type: 'image/png' }));
+
+    await waitFor(() => {
+      const storedDraft = JSON.parse(localStorage.getItem(DRAFT_STORAGE_KEY));
+      expect(storedDraft.basicInfo.photoPreviewUrl).toContain('data:image/png;base64');
+      expect(storedDraft.experiences[0].coverUrl).toContain('data:image/png;base64');
+    });
   });
 
   it('keeps createDraft values after navigation and routes generation to analyze', async () => {
@@ -695,11 +759,14 @@ describe('PageU app shell', () => {
     );
 
     expect(screen.getByRole('main')).toHaveAttribute('data-template', 'glass');
+    expect(screen.getByRole('main')).toHaveClass('portfolio-site-mode');
+    expect(screen.getByRole('main')).not.toHaveClass('portfolio-preview-mode');
     expect(screen.getByRole('heading', { level: 1, name: '林小雨' })).toBeInTheDocument();
     expect(screen.getAllByText(/产品设计实习生/).length).toBeGreaterThan(0);
     expect(screen.getByRole('heading', { level: 2, name: 'Featured Projects' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 2, name: '技能与证书' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 2, name: '作品 / 链接' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'Resume Snapshot' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '展开完整简历' })).toBeInTheDocument();
+    expect(screen.queryByText('完整时间轴')).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: '联系我' })).toBeInTheDocument();
     expect(screen.getByText('Generated by PageU')).toBeInTheDocument();
     expect(screen.queryByRole('complementary', { name: '模块区' })).not.toBeInTheDocument();
@@ -733,9 +800,78 @@ describe('PageU app shell', () => {
 
     expect(screen.getByRole('heading', { level: 1, name: '陈一诺' })).toBeInTheDocument();
     expect(screen.getAllByText('AI产品｜用户研究｜把想法做成产品').length).toBeGreaterThan(0);
+    const nav = screen.getByRole('navigation', { name: 'Portfolio navigation' });
+    expect(nav).toBeInTheDocument();
+    expect(within(nav).getByRole('link', { name: '关于我' })).toHaveAttribute('href', '#about');
+    expect(within(nav).getByRole('link', { name: '项目' })).toHaveAttribute('href', '#featured-projects');
+    expect(within(nav).getByRole('link', { name: '简历' })).toHaveAttribute('href', '#resume');
+    expect(within(nav).getByRole('link', { name: '联系我' })).toHaveAttribute('href', '#contact');
     expect(screen.getByRole('heading', { level: 2, name: 'Featured Projects' })).toBeInTheDocument();
     expect(screen.getAllByText('AI 简历优化项目').length).toBeGreaterThan(0);
-    expect(screen.getAllByRole('link', { name: '查看项目' }).some((link) => link.getAttribute('href') === 'https://example.com/demo')).toBe(true);
+    expect(screen.getAllByRole('link', { name: '查看项目' }).some((link) => link.getAttribute('href') === '/site/demo/project/project-1')).toBe(true);
+  });
+
+  it('opens a project detail page from the generated portfolio and returns to projects', async () => {
+    const user = userEvent.setup();
+    const createDraft = createInitialDraft();
+    createDraft.basicInfo.name = '陈一诺';
+    createDraft.experiences = [
+      {
+        id: 'experience-ai',
+        title: 'AI 简历优化项目',
+        role: '产品设计负责人',
+        period: '2025.09 - 2025.12',
+        summary: '把求职经历转化为个人网站。',
+        description: '调研同学求职痛点。设计输入流程。完成可演示原型。',
+        coverUrl: 'data:image/png;base64,project-cover',
+        link: 'https://example.com/demo',
+        collapsed: false,
+      },
+    ];
+    localStorage.setItem(SITE_DRAFT_STORAGE_KEY, JSON.stringify(generateSiteDraft(createDraft)));
+
+    render(
+      <MemoryRouter initialEntries={['/site/demo']}>
+        <App />
+      </MemoryRouter>,
+    );
+
+    const projectLink = screen.getAllByRole('link', { name: '查看项目' }).find((link) => link.getAttribute('href') === '/site/demo/project/project-1');
+    await user.click(projectLink);
+
+    expect(screen.getByRole('main')).toHaveAttribute('data-animation', 'fade-up-500');
+    expect(screen.getByRole('heading', { level: 1, name: 'AI 简历优化项目' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'AI 简历优化项目 封面' })).toHaveAttribute('src', 'data:image/png;base64,project-cover');
+    expect(screen.getByText('项目背景')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '项目链接' })).toHaveAttribute('href', 'https://example.com/demo');
+
+    await user.click(screen.getByRole('link', { name: '返回项目' }));
+    expect(screen.getByRole('heading', { level: 2, name: 'Featured Projects' })).toBeInTheDocument();
+  });
+
+  it('expands Resume Snapshot on demand', async () => {
+    const user = userEvent.setup();
+    const createDraft = createInitialDraft();
+    createDraft.basicInfo.school = '南山大学';
+    createDraft.basicInfo.major = '数字媒体技术';
+    createDraft.skillsInfo.keywords = 'React、用户研究';
+    createDraft.skillsInfo.certificates = '英语六级';
+    localStorage.setItem(SITE_DRAFT_STORAGE_KEY, JSON.stringify(generateSiteDraft(createDraft)));
+
+    render(
+      <MemoryRouter initialEntries={['/site/demo']}>
+        <App />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole('heading', { level: 2, name: 'Resume Snapshot' })).toBeInTheDocument();
+    expect(screen.queryByText('完整时间轴')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '展开完整简历' }));
+
+    expect(screen.getByText('完整时间轴')).toBeInTheDocument();
+    expect(screen.getAllByText('南山大学').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('数字媒体技术').length).toBeGreaterThan(0);
   });
 
   it('switches generated site layout class when the selected template changes', () => {

@@ -1,48 +1,38 @@
-import { getProjectFit, getProjectValue, splitActionPoints } from './portfolioUtils';
+import { Link, useInRouterContext } from 'react-router-dom';
+import { getInitial } from './portfolioUtils';
 
-export function ProjectCard({ project, featured = false, tone = 'default' }) {
-  const actionPoints = splitActionPoints(project);
+export function ProjectCard({ project, featured = false, tone = 'default', siteId = 'demo' }) {
+  const projectPath = `/site/${siteId || 'demo'}/project/${project.id}`;
+  const isInRouter = useInRouterContext();
+  const ActionLink = isInRouter ? Link : 'a';
+  const linkProps = isInRouter ? { to: projectPath } : { href: projectPath };
 
   return (
-    <article className={`portfolio-project-case ${featured ? 'is-featured' : ''} portfolio-project-case-${tone}`}>
-      <div className="portfolio-project-meta">
-        <span>{project.period || 'Project'}</span>
-        <strong>{project.role || '项目参与者'}</strong>
+    <article className={`portfolio-project-card ${featured ? 'is-featured' : ''} portfolio-project-card-${tone}`}>
+      <div className="portfolio-project-cover">
+        {project.coverUrl ? (
+          <img src={project.coverUrl} alt={`${project.title} 封面`} />
+        ) : (
+          <div className="portfolio-project-cover-placeholder" aria-hidden="true">
+            {getInitial(project.title)}
+          </div>
+        )}
       </div>
-      <div className="portfolio-project-body">
-        <h3>{project.title}</h3>
-        <p className="portfolio-project-summary">{project.summary}</p>
-
-        <div className="portfolio-project-narrative">
-          <div>
-            <h4>我做了什么</h4>
-            <ul>
-              {actionPoints.map((point) => (
-                <li key={point}>{point}</li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <h4>产出与价值</h4>
-            <p>{getProjectValue(project)}</p>
-          </div>
-          <div>
-            <h4>岗位关联</h4>
-            <p>{getProjectFit(project)}</p>
-          </div>
+      <div className="portfolio-project-card-body">
+        <div className="portfolio-project-meta">
+          <span>{project.period || 'Project'}</span>
+          <strong>{project.role || '项目参与者'}</strong>
         </div>
-
+        <h3>{project.title}</h3>
+        <p>{project.summary}</p>
         <div className="portfolio-tags">
-          {(project.tags || []).slice(0, 6).map((tag) => (
+          {(project.tags || []).slice(0, 5).map((tag) => (
             <span key={tag}>{tag}</span>
           ))}
         </div>
-
-        {project.link ? (
-          <a className="portfolio-link-button" href={project.link} target="_blank" rel="noreferrer">
-            查看项目
-          </a>
-        ) : null}
+        <ActionLink className="portfolio-link-button" {...linkProps}>
+          查看项目
+        </ActionLink>
       </div>
     </article>
   );

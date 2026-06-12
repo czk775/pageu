@@ -8,6 +8,17 @@ import { TemplateCard } from '../components/TemplateCard';
 import { templates } from '../data/templates';
 import { useCreateDraft } from '../state/CreateDraftContext';
 
+const readImagePreview = (file, onLoad) => {
+  if (!file) {
+    onLoad('');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = () => onLoad(typeof reader.result === 'string' ? reader.result : '');
+  reader.readAsDataURL(file);
+};
+
 export function CreatePage() {
   const navigate = useNavigate();
   const {
@@ -16,13 +27,22 @@ export function CreatePage() {
     updateJobInfo,
     updateSkillsInfo,
     updateWorksInfo,
-    updateStylePreference,
     addExperience,
     updateExperience,
     toggleExperience,
     deleteExperience,
     selectTemplate,
   } = useCreateDraft();
+
+  const handlePhotoChange = (event) => {
+    const file = event.target.files?.[0];
+    updateBasicInfo('photoName', file?.name || '');
+    readImagePreview(file, (previewUrl) => updateBasicInfo('photoPreviewUrl', previewUrl));
+  };
+
+  const handleProjectCoverChange = (experienceId, file) => {
+    readImagePreview(file, (previewUrl) => updateExperience(experienceId, 'coverUrl', previewUrl));
+  };
 
   const handleGenerate = (event) => {
     event.preventDefault();
@@ -44,12 +64,10 @@ export function CreatePage() {
           <h2 id="basic-info-title">个人基本信息</h2>
           <div className="create-grid basic-grid">
             <FormField id="photo" label="照片">
-              <input
-                id="photo"
-                type="file"
-                accept="image/*"
-                onChange={(event) => updateBasicInfo('photoName', event.target.files?.[0]?.name || '')}
-              />
+              <input id="photo" type="file" accept="image/*" onChange={handlePhotoChange} />
+              {createDraft.basicInfo.photoPreviewUrl ? (
+                <img className="upload-preview-thumb" src={createDraft.basicInfo.photoPreviewUrl} alt="头像预览" />
+              ) : null}
               {createDraft.basicInfo.photoName ? <span className="field-note">{createDraft.basicInfo.photoName}</span> : null}
             </FormField>
             <FormField id="name" label="姓名">
@@ -92,7 +110,7 @@ export function CreatePage() {
               <input
                 id="personal-tagline"
                 autoComplete="off"
-                placeholder="例如：AI产品｜市场营销｜喜欢把想法做成产品"
+                placeholder="例如：AI产品 × 用户研究 × 喜欢把想法做成产品"
                 type="text"
                 value={createDraft.basicInfo.personalTagline}
                 onChange={(event) => updateBasicInfo('personalTagline', event.target.value)}
@@ -124,11 +142,7 @@ export function CreatePage() {
               />
             </FormField>
             <FormField id="job-type" label="求职类型">
-              <select
-                id="job-type"
-                value={createDraft.jobInfo.jobType}
-                onChange={(event) => updateJobInfo('jobType', event.target.value)}
-              >
+              <select id="job-type" value={createDraft.jobInfo.jobType} onChange={(event) => updateJobInfo('jobType', event.target.value)}>
                 <option value="">暂不选择</option>
                 <option value="internship">实习</option>
                 <option value="campus">校招</option>
@@ -205,6 +219,16 @@ export function CreatePage() {
                           />
                         </FormField>
                       </div>
+                      <FormField id={`experience-summary-${experience.id}`} label={`项目一句话简介 ${number}`}>
+                        <input
+                          id={`experience-summary-${experience.id}`}
+                          autoComplete="off"
+                          placeholder="例如：为大学生求职场景设计 AI 简历优化体验"
+                          type="text"
+                          value={experience.summary}
+                          onChange={(event) => updateExperience(experience.id, 'summary', event.target.value)}
+                        />
+                      </FormField>
                       <FormField id={`experience-description-${experience.id}`} label={`经历描述 ${number}`}>
                         <textarea
                           id={`experience-description-${experience.id}`}
@@ -214,16 +238,29 @@ export function CreatePage() {
                           onChange={(event) => updateExperience(experience.id, 'description', event.target.value)}
                         />
                       </FormField>
-                      <FormField id={`experience-link-${experience.id}`} label={`项目/作品链接 ${number}`}>
-                        <input
-                          id={`experience-link-${experience.id}`}
-                          autoComplete="off"
-                          placeholder="https://github.com/xxx 或 https://demo.xxx.com"
-                          type="url"
-                          value={experience.link}
-                          onChange={(event) => updateExperience(experience.id, 'link', event.target.value)}
-                        />
-                      </FormField>
+                      <div className="create-grid two-grid">
+                        <FormField id={`experience-cover-${experience.id}`} label={`项目封面 ${number}`}>
+                          <input
+                            id={`experience-cover-${experience.id}`}
+                            type="file"
+                            accept="image/*"
+                            onChange={(event) => handleProjectCoverChange(experience.id, event.target.files?.[0])}
+                          />
+                          {experience.coverUrl ? (
+                            <img className="upload-preview-wide" src={experience.coverUrl} alt={`项目封面预览 ${number}`} />
+                          ) : null}
+                        </FormField>
+                        <FormField id={`experience-link-${experience.id}`} label={`项目/作品链接 ${number}`}>
+                          <input
+                            id={`experience-link-${experience.id}`}
+                            autoComplete="off"
+                            placeholder="https://github.com/xxx 或 https://demo.xxx.com"
+                            type="url"
+                            value={experience.link}
+                            onChange={(event) => updateExperience(experience.id, 'link', event.target.value)}
+                          />
+                        </FormField>
+                      </div>
                     </div>
                   )}
                 </fieldset>
@@ -275,24 +312,6 @@ export function CreatePage() {
               onChange={(event) => updateWorksInfo('rawLinks', event.target.value)}
             />
           </FormField>
-        </section>
-
-        <section className="create-block" aria-labelledby="style-preference-title">
-          <h2 id="style-preference-title">你希望网站给人的感觉</h2>
-          <div className="style-preference-options">
-            {['专业可信', '科技未来', '创意表达', '温暖亲和', '极简高级'].map((preference) => (
-              <label key={preference} className={createDraft.stylePreference === preference ? 'active' : ''}>
-                <input
-                  checked={createDraft.stylePreference === preference}
-                  name="stylePreference"
-                  onChange={() => updateStylePreference(preference)}
-                  type="radio"
-                  value={preference}
-                />
-                {preference}
-              </label>
-            ))}
-          </div>
         </section>
 
         <section className="create-block" aria-labelledby="template-title">

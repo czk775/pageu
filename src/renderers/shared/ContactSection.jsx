@@ -1,7 +1,7 @@
 export function ContactSection({ siteDraft, variant = 'default' }) {
   const profile = siteDraft.profile || {};
   const contact = siteDraft.contact || {};
-  const directContact = profile.contact || contact.email || contact.phone || '';
+  const directContact = profile.contact || contact.raw || contact.email || contact.phone || '';
 
   return (
     <section id="contact" className={`portfolio-contact-section portfolio-contact-${variant}`} aria-label="Contact">

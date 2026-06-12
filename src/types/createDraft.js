@@ -5,7 +5,9 @@ export const createEmptyExperience = (index = 1) => ({
   title: '',
   role: '',
   period: '',
+  summary: '',
   description: '',
+  coverUrl: '',
   link: '',
   collapsed: false,
 });
@@ -13,6 +15,7 @@ export const createEmptyExperience = (index = 1) => ({
 export const createInitialDraft = () => ({
   basicInfo: {
     photoName: '',
+    photoPreviewUrl: '',
     name: '',
     contact: '',
     school: '',
@@ -38,7 +41,9 @@ export const createInitialDraft = () => ({
       title: '',
       role: '',
       period: '',
+      summary: '',
       description: '',
+      coverUrl: '',
       link: '',
       collapsed: false,
     },

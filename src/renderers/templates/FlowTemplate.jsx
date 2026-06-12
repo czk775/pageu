@@ -1,10 +1,8 @@
 import { AboutSection } from '../shared/AboutSection';
 import { ContactSection } from '../shared/ContactSection';
 import { HeroSection } from '../shared/HeroSection';
-import { HighlightsStrip } from '../shared/HighlightsStrip';
 import { ProjectsSection } from '../shared/ProjectsSection';
-import { SkillPills } from '../shared/SkillPills';
-import { WorksLinks } from '../shared/WorksLinks';
+import { ResumeSnapshot } from '../shared/ResumeSnapshot';
 
 export function FlowTemplate({ siteDraft }) {
   return (
@@ -13,10 +11,8 @@ export function FlowTemplate({ siteDraft }) {
         <HeroSection siteDraft={siteDraft} variant="flow" />
         <AboutSection siteDraft={siteDraft} framed />
       </div>
-      <ProjectsSection projects={siteDraft.projects} layout="flow" title="Stories & Projects" />
-      <HighlightsStrip items={siteDraft.highlights} variant="flow" />
-      <WorksLinks works={siteDraft.works} variant="flow" />
-      <SkillPills certificates={siteDraft.certificates} skills={siteDraft.skills} variant="flow" />
+      <ProjectsSection siteDraft={siteDraft} layout="flow" title="Stories & Projects" />
+      <ResumeSnapshot siteDraft={siteDraft} variant="flow" />
       <ContactSection siteDraft={siteDraft} variant="flow" />
     </div>
   );
