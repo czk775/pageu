@@ -1038,3 +1038,102 @@ Browser smoke:
 ```text
 feat: add portfolio microinteractions and storytelling motion
 ```
+
+## Phase 8.4 — 成品个人网站最终清理与参考图对齐
+
+### 完成内容
+
+- 最终个人网站首屏改为大圆角 `portfolio shell`，宽度约 1220px，居中展示，带柔和阴影、玻璃/浅色渐变背景。
+- Hero 改为 Bento 式首屏：顶部为 shell 内导航，左侧为姓名、目标岗位和定位，右侧为真实头像/照片卡片，下方为关于我、精选项目、联系我的入口卡片。
+- 修复导航被旧样式固定在页面中间的问题，最终站点和预览模式都保持导航位于 shell 内部。
+- 创建页联系方式拆分为 `手机号` 和 `邮箱`。
+- 创建页删除独立的 `作品 / 项目链接` 输入区，保留每条经历里的项目链接字段。
+- 最终 Contact 区重写为真实个人网站联系方式：一句自然文案、邮箱卡片、手机号卡片、复制邮箱、复制手机号。
+- Resume Snapshot 改为轻量直出：教育背景、技能、证书/奖项、关键经历摘要，不再折叠。
+- 项目卡片简化为作品集卡片：项目名称、角色、时间、一句话简介、2-3 个要点、标签和查看项目按钮。
+- 项目详情页将“岗位关联”改为“我学到了什么”，保留背景、目标、行动、结果等自然案例结构。
+
+### 成品说明性文字清理
+
+已从最终网站移除以下类型文字：
+
+- `精选项目以作品集方式呈现，点击进入完整案例。`
+- `简历只是辅助，重点仍然是项目和作品。`
+- `展开完整简历`
+- `完整时间轴`
+- `这段经历可以帮助展示...`
+- `岗位关联`
+
+最终网站不再出现面向产品操作者的提示语或说明页文案。
+
+### 联系方式字段调整
+
+`createDraft.basicInfo` 新增：
+
+```js
+{
+  phone: '',
+  email: ''
+}
+```
+
+兼容旧数据：
+
+- 旧 `basicInfo.contact` 仍保留。
+- 如果旧 contact 看起来像邮箱，会迁移到 `email`。
+- 如果旧 contact 看起来像手机号，会迁移到 `phone`。
+- 不会把普通文本、项目名或作品说明当作联系方式展示。
+
+### 作品链接区删除说明
+
+- `/create` 删除独立 `worksInfo.rawLinks` 输入区。
+- `worksInfo.rawLinks` 仍保留在数据结构中，用于兼容旧 localStorage。
+- `draftGenerator` 不再把 `worksInfo.rawLinks` 输出到最终网站。
+- 经历卡片中的项目链接仍然保留，并可在项目卡片/项目详情页中作为“查看项目”入口。
+
+### Resume Snapshot 简化说明
+
+- 删除折叠/展开逻辑。
+- 删除“展开完整简历”和“完整时间轴”。
+- 直接展示轻量摘要，避免最终网站变成网页简历。
+
+### 头像真实展示修复
+
+- `photoPreviewUrl` 继续从 `createDraft` 传递到 `siteDraft.profile.photoPreviewUrl`。
+- Hero 头像优先使用用户上传图片。
+- 未上传图片时才使用渐变占位。
+
+### 新增/修改文件
+
+- `src/pages/CreatePage.jsx`
+- `src/types/createDraft.js`
+- `src/types/siteDraft.js`
+- `src/lib/draftGenerator.js`
+- `src/renderers/shared/HeroSection.jsx`
+- `src/renderers/shared/ProjectCard.jsx`
+- `src/renderers/shared/ProjectsSection.jsx`
+- `src/renderers/shared/ResumeSnapshot.jsx`
+- `src/renderers/shared/ContactSection.jsx`
+- `src/renderers/shared/portfolioUtils.js`
+- `src/pages/ProjectDetailPage.jsx`
+- `src/styles.css`
+- `src/App.test.jsx`
+
+### 测试结果
+
+```text
+npm test: 40 tests passed
+npm run build: success
+Browser smoke:
+- /create 显示手机号和邮箱，不显示独立“作品 / 项目链接”区块
+- /site/demo shell 宽度约 1220px，圆角 36px
+- /site/demo Hero 为 Bento 结构，导航位于 shell 内部
+- /site/demo 不显示说明性文字、展开完整简历、完整时间轴
+- /site/demo Contact 不展示作品链接或项目名，只展示邮箱/手机号模型
+```
+
+### Git commit
+
+```text
+fix: polish portfolio output content and contact model
+```

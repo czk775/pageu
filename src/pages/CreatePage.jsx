@@ -26,7 +26,6 @@ export function CreatePage() {
     updateBasicInfo,
     updateJobInfo,
     updateSkillsInfo,
-    updateWorksInfo,
     addExperience,
     updateExperience,
     toggleExperience,
@@ -79,13 +78,23 @@ export function CreatePage() {
                 onChange={(event) => updateBasicInfo('name', event.target.value)}
               />
             </FormField>
-            <FormField id="contact" label="联系方式">
+            <FormField id="phone" label="手机号">
               <input
-                id="contact"
+                id="phone"
                 autoComplete="off"
-                type="text"
-                value={createDraft.basicInfo.contact}
-                onChange={(event) => updateBasicInfo('contact', event.target.value)}
+                inputMode="tel"
+                type="tel"
+                value={createDraft.basicInfo.phone}
+                onChange={(event) => updateBasicInfo('phone', event.target.value)}
+              />
+            </FormField>
+            <FormField id="email" label="邮箱">
+              <input
+                id="email"
+                autoComplete="off"
+                type="email"
+                value={createDraft.basicInfo.email}
+                onChange={(event) => updateBasicInfo('email', event.target.value)}
               />
             </FormField>
             <FormField id="school" label="学校">
@@ -298,20 +307,6 @@ export function CreatePage() {
               />
             </FormField>
           </div>
-        </section>
-
-        <section className="create-block" aria-labelledby="works-title">
-          <h2 id="works-title">作品 / 项目链接</h2>
-          <FormField id="works-raw-links" label="作品 / 项目链接">
-            <textarea
-              id="works-raw-links"
-              autoComplete="off"
-              placeholder={'PageU Demo | https://example.com | AI个人网站生成器\nGitHub | https://github.com/xxx | 代码作品集\n毕业设计演示 | https://example.com | 校园社团管理系统演示'}
-              rows={5}
-              value={createDraft.worksInfo.rawLinks}
-              onChange={(event) => updateWorksInfo('rawLinks', event.target.value)}
-            />
-          </FormField>
         </section>
 
         <section className="create-block" aria-labelledby="template-title">

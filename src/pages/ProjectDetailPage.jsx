@@ -106,7 +106,7 @@ export function ProjectDetailPage() {
           </article>
           <article>
             <span>05</span>
-            <h2>岗位关联</h2>
+            <h2>我学到了什么</h2>
             <p>{getProjectFit(project)}</p>
           </article>
         </section>

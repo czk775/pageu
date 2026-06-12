@@ -3,7 +3,6 @@ import { createSection, defaultSectionOrder } from '../types/siteDraft';
 
 const fallbackSkills = ['产品思维', '技术理解', '表达能力', '执行力'];
 const fallbackProjectTitle = '校园项目经历';
-const urlPattern = /(https?:\/\/[^\s|，。；；]+)/i;
 
 const clean = (value = '') => String(value || '').trim();
 
@@ -28,46 +27,6 @@ const extractTargetRole = (jd = '') => {
     ?.trim();
   return firstPhrase || '目标岗位';
 };
-
-const getHostTitle = (url = '') => {
-  try {
-    return new URL(url).hostname.replace(/^www\./, '') || '作品链接';
-  } catch {
-    return '作品链接';
-  }
-};
-
-const parseWorksRawLinks = (rawLinks = '') =>
-  clean(rawLinks)
-    .split(/\n+/)
-    .map((line, index) => {
-      const parts = line
-        .split('|')
-        .map((part) => part.trim())
-        .filter(Boolean);
-      const matchedUrl = line.match(urlPattern)?.[0] || '';
-
-      if (!parts.length && !matchedUrl) {
-        return null;
-      }
-
-      if (parts.length >= 2 && /^https?:\/\//i.test(parts[1])) {
-        return {
-          id: `work-link-${index + 1}`,
-          title: parts[0] || getHostTitle(parts[1]),
-          url: parts[1],
-          description: parts[2] || '',
-        };
-      }
-
-      return {
-        id: `work-link-${index + 1}`,
-        title: parts.find((part) => !/^https?:\/\//i.test(part)) || getHostTitle(matchedUrl),
-        url: matchedUrl,
-        description: parts.filter((part) => part !== matchedUrl && !/^https?:\/\//i.test(part)).slice(1).join(' '),
-      };
-    })
-    .filter((item) => item && item.url);
 
 const pickTags = (experience, analysisResult) =>
   unique([
@@ -118,7 +77,7 @@ const toProjects = (experiences = [], targetRole, analysisResult) => {
     const title = experience.title || `项目经历 ${index + 1}`;
     const role = experience.role || '项目参与者';
     const actions = buildProjectActions(experience.description);
-    const summary = experience.summary || splitSentences(experience.description)[0] || `${role}围绕「${title}」完成了一段可展示的项目实践。`;
+    const summary = experience.summary || splitSentences(experience.description)[0] || `围绕「${title}」沉淀了一段完整的项目实践。`;
 
     return {
       id: `project-${index + 1}`,
@@ -130,11 +89,11 @@ const toProjects = (experiences = [], targetRole, analysisResult) => {
       coverUrl: experience.coverUrl,
       externalLink: experience.link,
       link: experience.link,
-      background: experience.description || `围绕 ${targetRole} 的展示目标，整理这段经历的背景、用户场景和关键问题。`,
-      goal: `把这段经历转化为更容易被招聘方理解的作品集案例。`,
+      background: experience.description || `围绕 ${targetRole} 的真实场景，梳理项目背景、用户需求和关键问题。`,
+      goal: `让项目目标、个人角色和产出价值被清晰地看见。`,
       actions,
-      result: experience.description ? '沉淀了可用于个人网站展示的项目素材与成果表达。' : '完成了项目经历的初步梳理。',
-      jdRelevance: `这段经历可以帮助展示与 ${targetRole} 相关的理解、表达和落地能力。`,
+      result: experience.description ? '形成了清晰的项目叙事、关键行动和可展示成果。' : '完成了项目经历的初步梳理。',
+      jdRelevance: `这段经历体现了我对 ${targetRole} 所需能力的理解，也训练了沟通、拆解和落地能力。`,
       tags: pickTags(experience, analysisResult),
     };
   });
@@ -149,7 +108,6 @@ const toExperienceStory = (projects = []) =>
   }));
 
 const toWorks = (createDraft, projects) => {
-  const rawWorks = parseWorksRawLinks(createDraft?.worksInfo?.rawLinks);
   const projectWorks = projects
     .filter((project) => project.externalLink)
     .map((project, index) => ({
@@ -159,7 +117,7 @@ const toWorks = (createDraft, projects) => {
       description: project.summary,
     }));
 
-  return [...rawWorks, ...projectWorks];
+  return projectWorks;
 };
 
 const buildHighlights = (createDraft, analysisResult, projects, skills) => {
@@ -239,7 +197,9 @@ export const generateSiteDraft = (createDraft, analysisResult = createAnalysisRe
     personalTagline ||
     (major ? `${major}背景，正在面向 ${targetRole} 打造个人网站。` : `正在面向 ${targetRole} 打造个人网站。`);
   const highlights = buildHighlights(createDraft, analysisResult, projects, skills);
-  const contactValue = clean(createDraft?.basicInfo?.contact);
+  const legacyContact = clean(createDraft?.basicInfo?.contact);
+  const phone = clean(createDraft?.basicInfo?.phone) || (/^\+?[\d\s-]{6,}$/.test(legacyContact) ? legacyContact : '');
+  const email = clean(createDraft?.basicInfo?.email) || (legacyContact.includes('@') ? legacyContact : '');
   const photoPreviewUrl = clean(createDraft?.basicInfo?.photoPreviewUrl);
   const resumeSnapshot = buildResumeSnapshot(createDraft, projects, skills, certificates);
 
@@ -281,7 +241,7 @@ export const generateSiteDraft = (createDraft, analysisResult = createAnalysisRe
       })),
     }),
     contact: createSection('contact', {
-      content: contactValue || '留下联系方式，让机会找到你。',
+      content: [email, phone].filter(Boolean).join(' / '),
     }),
   };
 
@@ -292,6 +252,8 @@ export const generateSiteDraft = (createDraft, analysisResult = createAnalysisRe
       headline: personalTagline || `${name}的个人主页`,
       intro,
       contact: sectionMap.contact.content,
+      phone,
+      email,
       school,
       major,
       photoName: createDraft?.basicInfo?.photoName || '',
@@ -313,13 +275,10 @@ export const generateSiteDraft = (createDraft, analysisResult = createAnalysisRe
     works,
     resumeSnapshot,
     contact: {
-      email: contactValue.includes('@') ? contactValue : '',
-      phone: contactValue && !contactValue.includes('@') ? contactValue : '',
-      raw: contactValue,
-      links: works.map((work) => ({
-        title: work.title,
-        url: work.url,
-      })),
+      email,
+      phone,
+      raw: sectionMap.contact.content,
+      links: [],
     },
     sections: defaultSectionOrder.map((type) => sectionMap[type]),
     theme: buildTheme(template),

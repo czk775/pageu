@@ -11,7 +11,6 @@ export function ProjectsSection({ siteDraft, layout = 'showcase', title = 'Featu
       <p className="portfolio-section-eyebrow">Projects</p>
       <div className="portfolio-section-heading">
         <h2>{title}</h2>
-        <span>精选项目以作品集方式呈现，点击进入完整案例。</span>
       </div>
       {featuredProject ? (
         <div className="portfolio-featured-project">

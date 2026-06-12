@@ -18,6 +18,8 @@ export const createInitialDraft = () => ({
     photoPreviewUrl: '',
     name: '',
     contact: '',
+    phone: '',
+    email: '',
     school: '',
     major: '',
     personalTagline: '',
@@ -63,13 +65,26 @@ export const normalizeDraft = (draft) => {
     return initialDraft;
   }
 
+  const legacyContact = String(draft.basicInfo?.contact || '').trim();
+  const legacyEmail = legacyContact.includes('@') ? legacyContact : '';
+  const legacyPhone = /^\+?[\d\s-]{6,}$/.test(legacyContact) ? legacyContact : '';
+  const basicInfo = {
+    ...initialDraft.basicInfo,
+    ...draft.basicInfo,
+  };
+
+  if (!basicInfo.email && legacyEmail) {
+    basicInfo.email = legacyEmail;
+  }
+
+  if (!basicInfo.phone && legacyPhone) {
+    basicInfo.phone = legacyPhone;
+  }
+
   return {
     ...initialDraft,
     ...draft,
-    basicInfo: {
-      ...initialDraft.basicInfo,
-      ...draft.basicInfo,
-    },
+    basicInfo,
     jobInfo: {
       ...initialDraft.jobInfo,
       ...draft.jobInfo,

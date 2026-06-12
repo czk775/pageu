@@ -20,9 +20,9 @@ export const splitActionPoints = (project) => {
   return points.length ? points.slice(0, 3) : ['梳理项目目标与关键场景', '推进方案设计与内容表达', '沉淀可展示的项目成果'];
 };
 
-export const getProjectValue = (project) => project.result || project.summary || '沉淀了可用于个人网站展示的项目素材。';
+export const getProjectValue = (project) => project.result || project.summary || '形成了清晰的过程记录和可展示成果。';
 
 export const getProjectFit = (project) =>
-  project.jdRelevance || '这段经历可以帮助展示与目标岗位相关的理解、表达和落地能力。';
+  project.jdRelevance || '这个项目让我更熟悉从问题拆解、方案推进到结果表达的完整过程。';
 
 export const ensureItems = (items = [], fallback = []) => (items.length ? items : fallback);

@@ -10,7 +10,7 @@ export function HeroSection({ siteDraft, variant = 'neo', aside = null }) {
     <section id="top" className={`portfolio-full-hero portfolio-full-hero-${variant}`} aria-label="Portfolio hero">
       <PortfolioNav name={profile.name || hero.title} />
       <div className="portfolio-hero-layout">
-        <div className="portfolio-hero-content">
+        <div className="portfolio-hero-content portfolio-hero-bento-main">
           <p className="portfolio-hero-kicker portfolio-reveal-line reveal-delay-1">{hero.eyebrow || 'Personal Portfolio'}</p>
           <h1 className="portfolio-reveal-line reveal-delay-2">{hero.title || profile.name}</h1>
           <p className="portfolio-hero-role portfolio-reveal-line reveal-delay-3">{profile.targetRole || hero.subtitle}</p>
@@ -24,7 +24,7 @@ export function HeroSection({ siteDraft, variant = 'neo', aside = null }) {
             </a>
           </div>
         </div>
-        <div className="portfolio-hero-visual portfolio-avatar-float portfolio-reveal-visual">
+        <div className="portfolio-hero-visual portfolio-hero-bento-photo portfolio-avatar-float portfolio-reveal-visual">
           <div className="portfolio-avatar-frame">
             {profile.photoPreviewUrl ? (
               <img className="portfolio-avatar-image" src={profile.photoPreviewUrl} alt={avatarAlt} />
@@ -35,13 +35,23 @@ export function HeroSection({ siteDraft, variant = 'neo', aside = null }) {
             )}
           </div>
           <div className="portfolio-visual-card">
-            <span>Focus</span>
+            <span>方向</span>
             <strong>{profile.targetRole || 'Portfolio'}</strong>
           </div>
-          <div className="portfolio-visual-card muted">
-            <span>Template</span>
-            <strong>{siteDraft.template || 'PageU'}</strong>
-          </div>
+        </div>
+        <div className="portfolio-hero-mini-grid portfolio-reveal-line reveal-delay-5">
+          <a className="portfolio-hero-mini-card" href="#about">
+            <span>关于我</span>
+            <strong>{profile.school || '个人背景'}</strong>
+          </a>
+          <a className="portfolio-hero-mini-card" href="#featured-projects">
+            <span>精选项目</span>
+            <strong>{siteDraft.projects?.[0]?.title || '项目实践'}</strong>
+          </a>
+          <a className="portfolio-hero-mini-card" href="#contact">
+            <span>联系我</span>
+            <strong>{profile.email || profile.phone || '暂未填写'}</strong>
+          </a>
         </div>
         {aside}
       </div>

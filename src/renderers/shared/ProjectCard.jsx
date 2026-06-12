@@ -1,6 +1,6 @@
 import { Link, useInRouterContext } from 'react-router-dom';
 import { AnimatedProjectArticle } from './PortfolioMotionContext';
-import { getInitial } from './portfolioUtils';
+import { getInitial, splitActionPoints } from './portfolioUtils';
 
 export function ProjectCard({ project, featured = false, motionIndex = 0, tone = 'default', siteId = 'demo' }) {
   const projectPath = `/site/${siteId || 'demo'}/project/${project.id}`;
@@ -29,6 +29,11 @@ export function ProjectCard({ project, featured = false, motionIndex = 0, tone =
         </div>
         <h3>{project.title}</h3>
         <p>{project.summary}</p>
+        <ul className="portfolio-project-bullets">
+          {splitActionPoints(project).map((point) => (
+            <li key={point}>{point}</li>
+          ))}
+        </ul>
         <div className="portfolio-tags">
           {(project.tags || []).slice(0, 5).map((tag) => (
             <span key={tag}>{tag}</span>
