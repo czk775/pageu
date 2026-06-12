@@ -1,14 +1,18 @@
 import { Link, useInRouterContext } from 'react-router-dom';
+import { AnimatedProjectArticle } from './PortfolioMotionContext';
 import { getInitial } from './portfolioUtils';
 
-export function ProjectCard({ project, featured = false, tone = 'default', siteId = 'demo' }) {
+export function ProjectCard({ project, featured = false, motionIndex = 0, tone = 'default', siteId = 'demo' }) {
   const projectPath = `/site/${siteId || 'demo'}/project/${project.id}`;
   const isInRouter = useInRouterContext();
   const ActionLink = isInRouter ? Link : 'a';
   const linkProps = isInRouter ? { to: projectPath } : { href: projectPath };
 
   return (
-    <article className={`portfolio-project-card ${featured ? 'is-featured' : ''} portfolio-project-card-${tone}`}>
+    <AnimatedProjectArticle
+      className={`portfolio-project-card ${featured ? 'is-featured' : ''} portfolio-project-card-${tone}`}
+      motionIndex={motionIndex}
+    >
       <div className="portfolio-project-cover">
         {project.coverUrl ? (
           <img src={project.coverUrl} alt={`${project.title} 封面`} />
@@ -30,10 +34,10 @@ export function ProjectCard({ project, featured = false, tone = 'default', siteI
             <span key={tag}>{tag}</span>
           ))}
         </div>
-        <ActionLink className="portfolio-link-button" {...linkProps}>
-          查看项目
+        <ActionLink aria-label="查看项目" className="portfolio-link-button portfolio-project-hover-link" {...linkProps}>
+          <span>查看项目 →</span>
         </ActionLink>
       </div>
-    </article>
+    </AnimatedProjectArticle>
   );
 }

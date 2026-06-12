@@ -1,11 +1,12 @@
 import { getAboutCopy } from './portfolioUtils';
+import { AnimatedSection } from './PortfolioMotionContext';
 
 export function AboutSection({ siteDraft, framed = false }) {
   const copy = getAboutCopy(siteDraft);
   const profile = siteDraft.profile || {};
 
   return (
-    <section id="about" className={`portfolio-about-section ${framed ? 'portfolio-section-frame' : ''}`}>
+    <AnimatedSection id="about" motionKey="about" className={`portfolio-about-section ${framed ? 'portfolio-section-frame' : ''}`}>
       <p className="portfolio-section-eyebrow">About</p>
       <div className="portfolio-section-heading">
         <h2>关于我</h2>
@@ -16,6 +17,6 @@ export function AboutSection({ siteDraft, framed = false }) {
           <p key={item}>{item}</p>
         ))}
       </div>
-    </section>
+    </AnimatedSection>
   );
 }

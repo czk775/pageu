@@ -974,3 +974,67 @@ Browser smoke:
 ```text
 feat: transform generated output into portfolio experience
 ```
+
+## Phase 8.3 — 个人网站微交互与动效体验升级
+
+### 完成内容
+
+- 为最终个人网站 `/site/:id` 增加 Landing Reveal：背景、Hero 文案、头像/照片和 CTA 分层渐入。
+- 为 About、Featured Projects、Resume、Contact 增加进入视口的叙事动效。
+- 项目卡片支持左右交替进入、hover 轻微上浮、封面图微放大，并显示“查看项目 →”。
+- 顶部导航支持平滑滚动，并根据当前 section 自动高亮。
+- CTA 按钮增加克制的 hover 微交互：轻微上浮、缩放和阴影增强。
+- 最终网站背景增加低幅度鼠标跟随光斑效果，移动端弱化。
+- 新增轻量彩蛋：连续点击 Logo/姓名 3 次显示“你发现了一个小彩蛋 ✨”。
+- 编辑器预览和发布页预览继续复用 TemplateRenderer，保留 preview/site 模式隔离。
+
+### 微交互设计说明
+
+- 动效集中在 Portfolio 网站渲染层，不改变创建、分析、编辑、发布的主流程。
+- Hero 使用 800–1200ms 的克制分层进入，增强首次打开的完整网站感。
+- section 进入视口时使用 fade-up，帮助用户按 About → Projects → Resume → Contact 的顺序阅读。
+- 项目卡片 hover 只改变 transform、封面图和边框光效，不触发布局重排。
+
+### 体验目的
+
+- 让 `/site/:id` 第一眼更像真实可分享的个人网站，而不是静态简历页面。
+- 用导航高亮和滚动叙事强化网站浏览感。
+- 用项目卡片 hover 和 CTA 微交互提升可点击感，但不抢用户主任务。
+
+### 性能与可访问性处理
+
+- 新增 `PortfolioMotionContext` 统一管理 `prefers-reduced-motion`。
+- 当用户系统设置减少动态效果时，关闭主要进入动画和背景跟随效果。
+- 在不支持 `IntersectionObserver` 的测试环境中自动降级，避免渲染报错。
+- 移动端弱化背景鼠标跟随和 hover 动效，保持滚动流畅。
+
+### 新增/修改文件
+
+- `src/renderers/shared/PortfolioMotionContext.jsx`
+- `src/renderers/TemplateRenderer.jsx`
+- `src/renderers/shared/PortfolioNav.jsx`
+- `src/renderers/shared/HeroSection.jsx`
+- `src/renderers/shared/AboutSection.jsx`
+- `src/renderers/shared/ProjectsSection.jsx`
+- `src/renderers/shared/ProjectCard.jsx`
+- `src/renderers/shared/ResumeSnapshot.jsx`
+- `src/renderers/shared/ContactSection.jsx`
+- `src/styles.css`
+- `src/App.test.jsx`
+
+### 测试结果
+
+```text
+npm test: 39 tests passed
+npm run build: success
+Browser smoke:
+- http://127.0.0.1:5174/site/demo: 200
+- /site/demo 根节点为 site mode，并带有 portfolio-motion-ready
+- 点击导航“项目”后跳转到 #featured-projects，导航高亮为“项目”
+```
+
+### Git commit
+
+```text
+feat: add portfolio microinteractions and storytelling motion
+```

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { AnimatedSection } from './PortfolioMotionContext';
 
 export function ResumeSnapshot({ siteDraft, variant = 'default' }) {
   const [expanded, setExpanded] = useState(false);
@@ -8,7 +9,7 @@ export function ResumeSnapshot({ siteDraft, variant = 'default' }) {
   const timeline = snapshot.timeline || siteDraft.experienceStory || [];
 
   return (
-    <section id="resume" className={`portfolio-resume-snapshot portfolio-resume-${variant}`}>
+    <AnimatedSection id="resume" motionKey="resume" className={`portfolio-resume-snapshot portfolio-resume-${variant}`} delay={0.08}>
       <p className="portfolio-section-eyebrow">Resume</p>
       <div className="portfolio-section-heading">
         <h2>Resume Snapshot</h2>
@@ -60,6 +61,6 @@ export function ResumeSnapshot({ siteDraft, variant = 'default' }) {
           )}
         </div>
       ) : null}
-    </section>
+    </AnimatedSection>
   );
 }

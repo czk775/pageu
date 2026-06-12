@@ -1,7 +1,7 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import App from './App';
 import { generateSiteDraft } from './lib/draftGenerator';
 import { TemplateRenderer } from './renderers/TemplateRenderer';
@@ -173,6 +173,45 @@ describe('siteDraft generation', () => {
     expect(container.querySelector('.portfolio-preview-scale').getAttribute('style') || '').not.toContain('transform');
   });
 
+  it('marks generated portfolio sections for storytelling motion', () => {
+    const createDraft = createInitialDraft();
+    createDraft.basicInfo.name = 'Portfolio User';
+    createDraft.template = 'glass';
+    const siteDraft = generateSiteDraft(createDraft);
+
+    const { container } = render(<TemplateRenderer as="main" mode="site" siteDraft={siteDraft} />);
+
+    expect(container.firstChild).toHaveClass('portfolio-motion-ready');
+    expect(container.firstChild).toHaveAttribute('data-reduced-motion', 'false');
+    expect(container.querySelector('[data-motion-section="about"]')).toBeInTheDocument();
+    expect(container.querySelector('[data-motion-section="projects"]')).toBeInTheDocument();
+    expect(container.querySelector('[data-motion-section="resume"]')).toBeInTheDocument();
+    expect(container.querySelector('[data-motion-section="contact"]')).toBeInTheDocument();
+  });
+
+  it('respects reduced motion preferences without breaking rendering', () => {
+    const originalMatchMedia = window.matchMedia;
+    window.matchMedia = vi.fn().mockImplementation((query) => ({
+      matches: query.includes('prefers-reduced-motion'),
+      media: query,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
+
+    try {
+      const siteDraft = generateSiteDraft(createInitialDraft());
+      const { container } = render(<TemplateRenderer as="main" mode="site" siteDraft={siteDraft} />);
+
+      expect(container.firstChild).toHaveAttribute('data-reduced-motion', 'true');
+      expect(screen.getByRole('heading', { level: 1, name: 'PageU 同学' })).toBeInTheDocument();
+    } finally {
+      window.matchMedia = originalMatchMedia;
+    }
+  });
+
   it('renders portfolio hero navigation and CTA links', () => {
     const createDraft = createInitialDraft();
     createDraft.basicInfo.name = 'Portfolio User';
@@ -188,6 +227,33 @@ describe('siteDraft generation', () => {
     expect(within(nav).getByRole('link', { name: '简历' })).toHaveAttribute('href', '#resume');
     expect(screen.getAllByRole('link', { name: '查看项目' }).some((link) => link.getAttribute('href') === '#featured-projects')).toBe(true);
     expect(screen.getAllByRole('link', { name: '联系我' }).some((link) => link.getAttribute('href') === '#contact')).toBe(true);
+  });
+
+  it('smooth scrolls and highlights portfolio navigation on click', async () => {
+    const user = userEvent.setup();
+    const originalScrollIntoView = window.HTMLElement.prototype.scrollIntoView;
+    const scrollIntoView = vi.fn();
+    window.HTMLElement.prototype.scrollIntoView = scrollIntoView;
+
+    try {
+      const siteDraft = generateSiteDraft(createInitialDraft());
+      render(
+        <MemoryRouter initialEntries={['/site/demo']}>
+          <App />
+        </MemoryRouter>,
+      );
+
+      const nav = screen.getByRole('navigation', { name: 'Portfolio navigation' });
+      const projectsLink = within(nav).getByRole('link', { name: '项目' });
+      await user.click(projectsLink);
+
+      expect(scrollIntoView).toHaveBeenCalledWith(expect.objectContaining({ behavior: 'smooth' }));
+      expect(projectsLink).toHaveAttribute('aria-current', 'page');
+      expect(window.location.hash).toBe('#featured-projects');
+      expect(screen.getByRole('heading', { level: 2, name: 'Featured Projects' })).toBeInTheDocument();
+    } finally {
+      window.HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
+    }
   });
 
   it('renders ProjectCard as portfolio case content instead of narrow Problem Action Result columns', () => {
@@ -207,6 +273,7 @@ describe('siteDraft generation', () => {
 
     const { container } = render(<TemplateRenderer mode="site" siteDraft={siteDraft} />);
 
+    expect(screen.getAllByText('查看项目 →').length).toBeGreaterThan(0);
     expect(screen.queryByText('我做了什么')).not.toBeInTheDocument();
     expect(screen.queryByText('产出与价值')).not.toBeInTheDocument();
     expect(screen.queryByText('岗位关联')).not.toBeInTheDocument();

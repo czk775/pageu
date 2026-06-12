@@ -1,4 +1,5 @@
 import { ProjectCard } from './ProjectCard';
+import { AnimatedSection } from './PortfolioMotionContext';
 
 export function ProjectsSection({ siteDraft, layout = 'showcase', title = 'Featured Projects' }) {
   const projects = siteDraft.projects || [];
@@ -6,7 +7,7 @@ export function ProjectsSection({ siteDraft, layout = 'showcase', title = 'Featu
   const [featuredProject, ...restProjects] = projects;
 
   return (
-    <section id="featured-projects" className={`portfolio-projects-section portfolio-projects-${layout}`}>
+    <AnimatedSection id="featured-projects" motionKey="projects" className={`portfolio-projects-section portfolio-projects-${layout}`} delay={0.06}>
       <p className="portfolio-section-eyebrow">Projects</p>
       <div className="portfolio-section-heading">
         <h2>{title}</h2>
@@ -14,16 +15,16 @@ export function ProjectsSection({ siteDraft, layout = 'showcase', title = 'Featu
       </div>
       {featuredProject ? (
         <div className="portfolio-featured-project">
-          <ProjectCard featured project={featuredProject} siteId={siteId} tone={layout} />
+          <ProjectCard featured motionIndex={0} project={featuredProject} siteId={siteId} tone={layout} />
         </div>
       ) : null}
       {restProjects.length ? (
         <div className="portfolio-projects-masonry">
-          {restProjects.map((project) => (
-            <ProjectCard key={project.id || project.title} project={project} siteId={siteId} tone={layout} />
+          {restProjects.map((project, index) => (
+            <ProjectCard key={project.id || project.title} motionIndex={index + 1} project={project} siteId={siteId} tone={layout} />
           ))}
         </div>
       ) : null}
-    </section>
+    </AnimatedSection>
   );
 }
