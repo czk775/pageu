@@ -18,6 +18,7 @@ export const createEmptyExperience = createInitialExperience;
 export const createInitialDraft = () => ({
   basicInfo: {
     photoName: '',
+    photoUrl: '',
     photoPreviewUrl: '',
     name: '',
     contact: '',

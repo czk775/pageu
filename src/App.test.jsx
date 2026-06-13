@@ -266,6 +266,36 @@ describe('siteDraft generation', () => {
     expect(within(hero).queryByRole('link', { name: '查看项目' })).not.toBeInTheDocument();
   });
 
+  it('renders the uploaded profile photo when the draft stores photoUrl', () => {
+    const createDraft = createInitialDraft();
+    createDraft.basicInfo.name = 'Photo User';
+    createDraft.basicInfo.photoUrl = 'data:image/png;base64,avatar-photo-url';
+    createDraft.basicInfo.selfIntro = 'Intro from the create form.';
+    createDraft.jobInfo.jd = 'Product Designer Intern';
+    const siteDraft = generateSiteDraft(createDraft);
+
+    render(<TemplateRenderer as="main" mode="site" siteDraft={siteDraft} />);
+
+    const hero = screen.getByRole('region', { name: 'Portfolio hero' });
+    expect(within(hero).getByRole('img', { name: 'Photo User 的头像' })).toHaveAttribute(
+      'src',
+      'data:image/png;base64,avatar-photo-url',
+    );
+  });
+
+  it('does not use JD section labels as the hero target role', () => {
+    const createDraft = createInitialDraft();
+    createDraft.basicInfo.name = 'Role User';
+    createDraft.basicInfo.selfIntro = 'Intro from the create form.';
+    createDraft.jobInfo.jd = '岗位职责：负责 AI 产品需求分析和用户体验设计。\n任职要求：熟悉产品设计。';
+    const siteDraft = generateSiteDraft(createDraft);
+
+    render(<TemplateRenderer as="main" mode="site" siteDraft={siteDraft} />);
+
+    const hero = screen.getByRole('region', { name: 'Portfolio hero' });
+    expect(within(hero).queryByText(/岗位职责/)).not.toBeInTheDocument();
+  });
+
   it('smooth scrolls and highlights portfolio navigation on click', async () => {
     const user = userEvent.setup();
     const originalScrollIntoView = window.HTMLElement.prototype.scrollIntoView;

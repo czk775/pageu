@@ -29,12 +29,52 @@ const splitSentences = (value = '') =>
 
 const unique = (items = []) => [...new Set(items.map((item) => clean(item)).filter(Boolean))];
 
+const jdSectionLabelPattern =
+  /^(岗位职责|职位职责|工作职责|职责描述|职位描述|岗位描述|工作内容|任职要求|岗位要求|任职资格)\s*[:：]?/u;
+const targetRolePrefixPattern = /^(岗位名称|职位名称|应聘岗位|目标岗位|求职岗位|申请岗位|岗位|职位)\s*[:：]\s*/u;
+const responsibilityStartPattern = /^(负责|参与|协助|完成|推进|支持|熟悉|具备|能够|需要|要求|围绕)/u;
+const targetRoleKeywordPattern =
+  /(实习生|经理|设计师|工程师|开发|运营|市场|产品|策划|分析师|研究员|顾问|PM|intern|designer|manager|engineer|developer|product|analyst|researcher|consultant)/i;
+
+const cleanTargetRoleCandidate = (value = '') =>
+  clean(value)
+    .replace(targetRolePrefixPattern, '')
+    .replace(/[：:，,。；;\s]+$/u, '')
+    .trim();
+
+const isUsableTargetRole = (value = '') => {
+  const candidate = cleanTargetRoleCandidate(value);
+  if (!candidate || candidate.length > 36) {
+    return false;
+  }
+
+  if (jdSectionLabelPattern.test(candidate) || responsibilityStartPattern.test(candidate)) {
+    return false;
+  }
+
+  return targetRoleKeywordPattern.test(candidate);
+};
+
 const extractTargetRole = (jd = '') => {
-  const firstPhrase = clean(jd)
-    .split(/[，,。；;\n\r]/)
-    .find(Boolean)
-    ?.trim();
-  return firstPhrase || '目标岗位';
+  const text = clean(jd);
+  if (!text) {
+    return '目标岗位';
+  }
+
+  const explicitMatch = text.match(
+    /(?:岗位名称|职位名称|应聘岗位|目标岗位|求职岗位|申请岗位|岗位|职位)\s*[:：]\s*([^\n\r，,。；;]+)/u,
+  );
+  const explicitRole = cleanTargetRoleCandidate(explicitMatch?.[1]);
+  if (isUsableTargetRole(explicitRole)) {
+    return explicitRole;
+  }
+
+  const firstRole = text
+    .split(/[，,。；;\n\r]+/)
+    .map(cleanTargetRoleCandidate)
+    .find(isUsableTargetRole);
+
+  return firstRole || '目标岗位';
 };
 
 const pickTags = (experience, analysisResult) =>
@@ -259,7 +299,8 @@ export const generateSiteDraft = (createDraft, analysisResult = createAnalysisRe
   const legacyContact = clean(createDraft?.basicInfo?.contact);
   const phone = clean(createDraft?.basicInfo?.phone) || (/^\+?[\d\s-]{6,}$/.test(legacyContact) ? legacyContact : '');
   const email = clean(createDraft?.basicInfo?.email) || (legacyContact.includes('@') ? legacyContact : '');
-  const photoPreviewUrl = cleanPreviewUrl(createDraft?.basicInfo?.photoPreviewUrl);
+  const photoPreviewUrl =
+    cleanPreviewUrl(createDraft?.basicInfo?.photoPreviewUrl) || cleanPreviewUrl(createDraft?.basicInfo?.photoUrl);
   const resumeSnapshot = buildResumeSnapshot(createDraft, projects, skills, certificates);
 
   const sectionMap = {
