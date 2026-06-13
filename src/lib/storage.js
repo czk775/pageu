@@ -24,7 +24,33 @@ export const writeJsonStorage = (key, value) => {
   window.localStorage.setItem(key, JSON.stringify(value));
 };
 
-export const loadSiteDraft = (fallbackDraft) => normalizeSiteDraft(readJsonStorage(SITE_DRAFT_STORAGE_KEY)) || fallbackDraft;
+export const loadSiteDraft = (fallbackDraft) => {
+  const storedDraft = normalizeSiteDraft(readJsonStorage(SITE_DRAFT_STORAGE_KEY));
+
+  if (!storedDraft) {
+    return fallbackDraft;
+  }
+
+  const fallbackProfile = fallbackDraft?.profile || {};
+  const fallbackPhotoUrl = fallbackProfile.photoUrl || fallbackProfile.photoPreviewUrl || '';
+  const storedPhotoUrl = storedDraft.profile.photoUrl || storedDraft.profile.photoPreviewUrl || '';
+  const photoUrl = storedPhotoUrl || fallbackPhotoUrl;
+  const selfIntro = storedDraft.profile.selfIntro || fallbackProfile.selfIntro || '';
+
+  return {
+    ...storedDraft,
+    profile: {
+      ...storedDraft.profile,
+      photoUrl,
+      photoPreviewUrl: storedDraft.profile.photoPreviewUrl || fallbackProfile.photoPreviewUrl || photoUrl,
+      selfIntro,
+    },
+    hero: {
+      ...storedDraft.hero,
+      subtitle: storedDraft.hero.subtitle || fallbackDraft?.hero?.subtitle || selfIntro,
+    },
+  };
+};
 
 export const saveSiteDraft = (siteDraft) => writeJsonStorage(SITE_DRAFT_STORAGE_KEY, siteDraft);
 

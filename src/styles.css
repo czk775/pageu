@@ -4420,6 +4420,19 @@ a {
   object-fit: cover;
 }
 
+.portfolio-hero-bento-photo .portfolio-avatar-frame {
+  width: min(88%, 340px);
+  aspect-ratio: 0.78;
+  border-radius: 34px;
+  padding: 0;
+}
+
+.portfolio-hero-bento-photo .portfolio-avatar-image,
+.portfolio-hero-bento-photo .portfolio-avatar-fallback {
+  border-radius: 34px;
+  object-fit: cover;
+}
+
 .portfolio-avatar-fallback {
   display: grid;
   width: 100%;

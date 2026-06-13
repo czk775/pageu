@@ -245,9 +245,10 @@ describe('siteDraft generation', () => {
     }
   });
 
-  it('renders portfolio hero navigation and CTA links', () => {
+  it('renders portfolio hero navigation and simplified hero text', () => {
     const createDraft = createInitialDraft();
     createDraft.basicInfo.name = 'Portfolio User';
+    createDraft.basicInfo.selfIntro = '我希望把复杂经历整理成清晰的作品集表达。';
     createDraft.jobInfo.jd = 'Product Designer Intern';
     const siteDraft = generateSiteDraft(createDraft);
 
@@ -258,8 +259,11 @@ describe('siteDraft generation', () => {
     expect(within(nav).getByRole('link', { name: '关于我' })).toHaveAttribute('href', '#about');
     expect(within(nav).getByRole('link', { name: '项目' })).toHaveAttribute('href', '#featured-projects');
     expect(within(nav).getByRole('link', { name: '简历' })).toHaveAttribute('href', '#resume');
-    expect(screen.getAllByRole('link', { name: '查看项目' }).some((link) => link.getAttribute('href') === '#featured-projects')).toBe(true);
-    expect(screen.getAllByRole('link', { name: '联系我' }).some((link) => link.getAttribute('href') === '#contact')).toBe(true);
+    const hero = screen.getByRole('region', { name: 'Portfolio hero' });
+    expect(within(hero).getByRole('heading', { level: 1, name: 'Portfolio User' })).toBeInTheDocument();
+    expect(within(hero).getByText('Product Designer Intern')).toBeInTheDocument();
+    expect(within(hero).getByText('我希望把复杂经历整理成清晰的作品集表达。')).toBeInTheDocument();
+    expect(within(hero).queryByRole('link', { name: '查看项目' })).not.toBeInTheDocument();
   });
 
   it('smooth scrolls and highlights portfolio navigation on click', async () => {
@@ -1002,6 +1006,47 @@ describe('PageU app shell', () => {
     expect(screen.queryByRole('heading', { level: 2, name: 'Resume Snapshot' })).not.toBeInTheDocument();
     expect(screen.getAllByText('AI 简历优化项目').length).toBeGreaterThan(0);
     expect(screen.getAllByRole('link', { name: '查看项目' }).some((link) => link.getAttribute('href') === '/site/demo/project/project-1')).toBe(true);
+  });
+
+  it('renders a simplified hero with the latest uploaded profile photo from createDraft', () => {
+    const createDraft = createInitialDraft();
+    createDraft.basicInfo.name = '陈一诺';
+    createDraft.basicInfo.school = '南山大学';
+    createDraft.basicInfo.email = 'chen@example.com';
+    createDraft.basicInfo.selfIntro = '我关注 AI 产品、用户洞察与商业创新，希望把技术理解转化为真实产品价值。';
+    createDraft.basicInfo.photoPreviewUrl = 'data:image/png;base64,latest-avatar';
+    createDraft.jobInfo.jd = 'AI 产品经理实习生，负责需求分析和产品落地。';
+    createDraft.experiences = [
+      {
+        id: 'experience-ai',
+        title: 'AI 简历优化项目',
+        summary: '把求职经历转化为个人网站。',
+        collapsed: false,
+      },
+    ];
+
+    const staleSiteDraft = generateSiteDraft(createDraft);
+    staleSiteDraft.profile.photoUrl = '';
+    staleSiteDraft.profile.photoPreviewUrl = '';
+    localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(createDraft));
+    localStorage.setItem(SITE_DRAFT_STORAGE_KEY, JSON.stringify(staleSiteDraft));
+
+    render(
+      <MemoryRouter initialEntries={['/site/demo']}>
+        <App />
+      </MemoryRouter>,
+    );
+
+    const hero = screen.getByRole('region', { name: 'Portfolio hero' });
+    expect(within(hero).getByRole('heading', { level: 1, name: '陈一诺' })).toBeInTheDocument();
+    expect(within(hero).getByText('AI 产品经理实习生')).toBeInTheDocument();
+    expect(within(hero).getByText('我关注 AI 产品、用户洞察与商业创新，希望把技术理解转化为真实产品价值。')).toBeInTheDocument();
+    expect(within(hero).getByRole('img', { name: '陈一诺 的头像' })).toHaveAttribute('src', 'data:image/png;base64,latest-avatar');
+    expect(within(hero).queryByText('南山大学')).not.toBeInTheDocument();
+    expect(within(hero).queryByText('精选项目')).not.toBeInTheDocument();
+    expect(within(hero).queryByText('AI 简历优化项目')).not.toBeInTheDocument();
+    expect(within(hero).queryByText('chen@example.com')).not.toBeInTheDocument();
+    expect(within(hero).queryByText('方向')).not.toBeInTheDocument();
   });
 
   it('renders the generated contact section with only phone and email', () => {
