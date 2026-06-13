@@ -239,7 +239,7 @@ describe('siteDraft generation', () => {
       const { container } = render(<TemplateRenderer as="main" mode="site" siteDraft={siteDraft} />);
 
       expect(container.firstChild).toHaveAttribute('data-reduced-motion', 'true');
-      expect(screen.getByRole('heading', { level: 1, name: 'PageU 同学' })).toBeInTheDocument();
+      expect(screen.getByRole('navigation', { name: 'Portfolio navigation' })).toBeInTheDocument();
     } finally {
       window.matchMedia = originalMatchMedia;
     }
@@ -260,8 +260,9 @@ describe('siteDraft generation', () => {
     expect(within(nav).getByRole('link', { name: '项目' })).toHaveAttribute('href', '#featured-projects');
     expect(within(nav).getByRole('link', { name: '简历' })).toHaveAttribute('href', '#resume');
     const hero = screen.getByRole('region', { name: 'Portfolio hero' });
-    expect(within(hero).getByRole('heading', { level: 1, name: 'Portfolio User' })).toBeInTheDocument();
-    expect(within(hero).getByText('Product Designer Intern')).toBeInTheDocument();
+    expect(within(nav).getByRole('link', { name: 'Portfolio User' })).toHaveAttribute('href', '#top');
+    expect(document.querySelector('.portfolio-hero-horizontal-tab')).toBeInTheDocument();
+    expect(within(hero).queryByText('Product Designer Intern')).not.toBeInTheDocument();
     expect(within(hero).getByText('我希望把复杂经历整理成清晰的作品集表达。')).toBeInTheDocument();
     expect(within(hero).queryByRole('link', { name: '查看项目' })).not.toBeInTheDocument();
   });
@@ -281,6 +282,27 @@ describe('siteDraft generation', () => {
       'src',
       'data:image/png;base64,avatar-photo-url',
     );
+  });
+
+  it('renders the hero as a horizontal profile tab with photo and self intro', () => {
+    const createDraft = createInitialDraft();
+    createDraft.basicInfo.name = 'Horizontal User';
+    createDraft.basicInfo.photoPreviewUrl = 'data:image/png;base64,horizontal-avatar';
+    createDraft.basicInfo.selfIntro = 'This is the self intro from basic info.';
+    createDraft.jobInfo.jd = 'Product Designer Intern';
+    const siteDraft = generateSiteDraft(createDraft);
+
+    const { container } = render(<TemplateRenderer as="main" mode="site" siteDraft={siteDraft} />);
+
+    const hero = screen.getByRole('region', { name: 'Portfolio hero' });
+    const horizontalTab = container.querySelector('.portfolio-hero-horizontal-tab');
+    expect(horizontalTab).toBeInTheDocument();
+    expect(within(hero).getByRole('img', { name: 'Horizontal User 的头像' })).toHaveAttribute(
+      'src',
+      'data:image/png;base64,horizontal-avatar',
+    );
+    expect(within(hero).getByText('This is the self intro from basic info.')).toBeInTheDocument();
+    expect(container.querySelector('.portfolio-hero-bento-main')).not.toBeInTheDocument();
   });
 
   it('does not use JD section labels as the hero target role', () => {
@@ -773,7 +795,7 @@ describe('PageU app shell', () => {
     await user.click(screen.getByRole('button', { name: '确认生成' }));
 
     expect(screen.getByRole('heading', { level: 1, name: '再调整一下，让它更像你' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 1, name: '陈一诺' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '陈一诺' })).toHaveAttribute('href', '#top');
     expect(screen.getAllByText(/用户体验设计实习生/).length).toBeGreaterThan(0);
     expect(screen.getAllByText('AI 简历优化项目').length).toBeGreaterThan(0);
     expect(screen.queryByRole('heading', { level: 2, name: 'PageU 同学' })).not.toBeInTheDocument();
@@ -952,7 +974,7 @@ describe('PageU app shell', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByRole('heading', { level: 1, name: '林小雨' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '林小雨' })).toHaveAttribute('href', '#top');
     await user.click(screen.getByRole('button', { name: '创建新的个人网站' }));
 
     expect(screen.getByRole('heading', { level: 1, name: '告诉我你的经历' })).toBeInTheDocument();
@@ -978,7 +1000,7 @@ describe('PageU app shell', () => {
     expect(screen.getByRole('main')).toHaveAttribute('data-template', 'glass');
     expect(screen.getByRole('main')).toHaveClass('portfolio-site-mode');
     expect(screen.getByRole('main')).not.toHaveClass('portfolio-preview-mode');
-    expect(screen.getByRole('heading', { level: 1, name: '林小雨' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '林小雨' })).toHaveAttribute('href', '#top');
     expect(screen.getAllByText(/产品设计实习生/).length).toBeGreaterThan(0);
     expect(screen.getByRole('heading', { level: 2, name: '简历摘要' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: '精选项目' })).toBeInTheDocument();
@@ -1019,7 +1041,7 @@ describe('PageU app shell', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByRole('heading', { level: 1, name: '陈一诺' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '陈一诺' })).toHaveAttribute('href', '#top');
     expect(screen.getAllByText('我关注 AI 产品、用户洞察与商业创新，希望把技术理解转化为真实产品价值。').length).toBeGreaterThan(0);
     const nav = screen.getByRole('navigation', { name: 'Portfolio navigation' });
     expect(nav).toBeInTheDocument();
@@ -1068,8 +1090,8 @@ describe('PageU app shell', () => {
     );
 
     const hero = screen.getByRole('region', { name: 'Portfolio hero' });
-    expect(within(hero).getByRole('heading', { level: 1, name: '陈一诺' })).toBeInTheDocument();
-    expect(within(hero).getByText('AI 产品经理实习生')).toBeInTheDocument();
+    expect(within(hero).queryByRole('heading', { level: 1, name: '陈一诺' })).not.toBeInTheDocument();
+    expect(within(hero).queryByText('AI 产品经理实习生')).not.toBeInTheDocument();
     expect(within(hero).getByText('我关注 AI 产品、用户洞察与商业创新，希望把技术理解转化为真实产品价值。')).toBeInTheDocument();
     expect(within(hero).getByRole('img', { name: '陈一诺 的头像' })).toHaveAttribute('src', 'data:image/png;base64,latest-avatar');
     expect(within(hero).queryByText('南山大学')).not.toBeInTheDocument();

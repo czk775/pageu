@@ -4919,6 +4919,71 @@ a {
   transform: none;
 }
 
+.portfolio-site-mode .portfolio-hero-layout,
+.portfolio-preview-mode .portfolio-hero-layout {
+  display: block;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.portfolio-hero-horizontal-tab {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.82fr) minmax(0, 1.18fr);
+  gap: clamp(18px, 3vw, 34px);
+  align-items: stretch;
+  width: 100%;
+  min-height: clamp(340px, 48vh, 540px);
+  padding: clamp(18px, 3vw, 34px);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: clamp(28px, 4vw, 38px);
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.86), transparent 26%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.76), color-mix(in srgb, var(--generated-primary), white 86%));
+  box-shadow: 0 28px 90px rgba(18, 56, 76, 0.12);
+  overflow: hidden;
+  backdrop-filter: blur(20px);
+}
+
+.portfolio-hero-tab-photo {
+  min-width: 0;
+}
+
+.portfolio-hero-tab-photo .portfolio-avatar-frame {
+  width: 100%;
+  height: 100%;
+  min-height: clamp(280px, 42vh, 480px);
+  aspect-ratio: auto;
+  border-radius: clamp(22px, 3vw, 32px);
+  padding: 0;
+}
+
+.portfolio-hero-tab-photo .portfolio-avatar-frame::after {
+  border-radius: inherit;
+}
+
+.portfolio-hero-tab-photo .portfolio-avatar-image,
+.portfolio-hero-tab-photo .portfolio-avatar-fallback {
+  border-radius: inherit;
+  object-fit: cover;
+}
+
+.portfolio-hero-tab-copy {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding: clamp(10px, 3vw, 42px);
+}
+
+.portfolio-hero-self-intro {
+  max-width: 18em;
+  margin: 0;
+  color: var(--generated-text);
+  font-size: clamp(28px, 4.4vw, 58px);
+  font-weight: 900;
+  line-height: 1.18;
+  letter-spacing: 0;
+}
+
 @media (max-width: 900px) {
   .portfolio-site-mode .portfolio-nav,
   .portfolio-preview-mode .portfolio-nav {
@@ -4934,5 +4999,22 @@ a {
   .portfolio-preview-mode .portfolio-full-hero {
     min-height: auto;
     padding-top: 0;
+  }
+
+  .portfolio-hero-horizontal-tab {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .portfolio-hero-tab-photo .portfolio-avatar-frame {
+    min-height: 320px;
+  }
+
+  .portfolio-hero-tab-copy {
+    padding: 8px;
+  }
+
+  .portfolio-hero-self-intro {
+    font-size: clamp(24px, 8vw, 38px);
   }
 }

@@ -6,9 +6,11 @@ export function HeroSection({ siteDraft, variant = 'neo' }) {
   const [avatarFailed, setAvatarFailed] = useState(false);
   const profile = siteDraft.profile || {};
   const hero = siteDraft.hero || {};
-  const avatarAlt = `${profile.name || 'PageU 同学'} 的头像`;
+  const displayName = profile.name || hero.title || 'PageU 同学';
+  const avatarAlt = `${displayName} 的头像`;
   const photoUrl = profile.photoUrl || profile.photoPreviewUrl || '';
   const shouldShowAvatar = Boolean(photoUrl) && !avatarFailed;
+  const selfIntro = profile.selfIntro || hero.subtitle || profile.intro || '正在整理一段更适合展示自己的介绍。';
 
   useEffect(() => {
     setAvatarFailed(false);
@@ -16,22 +18,22 @@ export function HeroSection({ siteDraft, variant = 'neo' }) {
 
   return (
     <section id="top" className={`portfolio-full-hero portfolio-full-hero-${variant}`} aria-label="Portfolio hero">
-      <PortfolioNav name={profile.name || hero.title} />
+      <PortfolioNav name={displayName} />
       <div className="portfolio-hero-layout">
-        <div className="portfolio-hero-content portfolio-hero-bento-main">
-          <h1 className="portfolio-reveal-line reveal-delay-1">{hero.title || profile.name}</h1>
-          <p className="portfolio-hero-role portfolio-reveal-line reveal-delay-2">{profile.targetRole || hero.subtitle}</p>
-          <p className="portfolio-hero-tagline portfolio-reveal-line reveal-delay-3">{profile.selfIntro || hero.subtitle || profile.intro}</p>
-        </div>
-        <div className="portfolio-hero-visual portfolio-hero-bento-photo portfolio-avatar-float portfolio-reveal-visual">
-          <div className="portfolio-avatar-frame">
-            {shouldShowAvatar ? (
-              <img className="portfolio-avatar-image" src={photoUrl} alt={avatarAlt} onError={() => setAvatarFailed(true)} />
-            ) : (
-              <div className="portfolio-avatar-fallback" aria-label={avatarAlt}>
-                {getInitial(profile.name)}
-              </div>
-            )}
+        <div className="portfolio-hero-horizontal-tab portfolio-reveal-visual">
+          <div className="portfolio-hero-tab-photo portfolio-avatar-float">
+            <div className="portfolio-avatar-frame">
+              {shouldShowAvatar ? (
+                <img className="portfolio-avatar-image" src={photoUrl} alt={avatarAlt} onError={() => setAvatarFailed(true)} />
+              ) : (
+                <div className="portfolio-avatar-fallback" aria-label={avatarAlt}>
+                  {getInitial(displayName)}
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="portfolio-hero-tab-copy">
+            <p className="portfolio-hero-self-intro portfolio-reveal-line reveal-delay-2">{selfIntro}</p>
           </div>
         </div>
       </div>
