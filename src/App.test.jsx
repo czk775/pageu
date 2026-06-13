@@ -81,7 +81,10 @@ describe('siteDraft generation', () => {
     expect(resumeSection).toBeInTheDocument();
     expect(aboutSection.compareDocumentPosition(resumeSection) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(within(aboutSection).getByText('喜欢研究校园 AI 产品和消费品牌案例。')).toBeInTheDocument();
-    expect(within(aboutSection).getByText('市场营销专业背景，关注用户洞察和增长策略。')).toBeInTheDocument();
+    const backgroundCopy = within(aboutSection).getByText('市场营销专业背景，关注用户洞察和增长策略。');
+    const interestsCopy = within(aboutSection).getByText('喜欢研究校园 AI 产品和消费品牌案例。');
+    expect(backgroundCopy).toBeInTheDocument();
+    expect(backgroundCopy.compareDocumentPosition(interestsCopy) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(within(aboutSection).getByText('擅长访谈、数据分析和清晰表达。')).toBeInTheDocument();
     expect(within(aboutSection).queryByText(/示例大学/)).not.toBeInTheDocument();
     expect(within(aboutSection).queryByText(/目标方向/)).not.toBeInTheDocument();
@@ -552,6 +555,10 @@ describe('PageU app shell', () => {
     expect(screen.getByText('输入更多信息进一步展示自己，比如兴趣爱好、专业背景、特长等')).toBeInTheDocument();
     expect(screen.getByLabelText('兴趣爱好')).toBeInTheDocument();
     expect(screen.getByLabelText('专业背景')).toBeInTheDocument();
+    expect(
+      screen.getByLabelText('专业背景').compareDocumentPosition(screen.getByLabelText('兴趣爱好')) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
     expect(screen.getByLabelText('特长')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: '岗位信息' })).toBeInTheDocument();
     expect(screen.getByLabelText('岗位 JD')).toBeRequired();

@@ -270,7 +270,7 @@ const buildAbout = (createDraft) => {
     interests,
     background,
     strengths,
-    items: [interests, background, strengths].filter(Boolean),
+    items: [background, interests, strengths].filter(Boolean),
   };
 };
 

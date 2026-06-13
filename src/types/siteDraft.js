@@ -67,7 +67,7 @@ export const normalizeSiteDraft = (siteDraft) => {
 
   const aboutItems = normalizeArray(siteDraft.about?.items).length
     ? normalizeArray(siteDraft.about?.items)
-    : [siteDraft.about?.interests, siteDraft.about?.background, siteDraft.about?.strengths].filter(Boolean);
+    : [siteDraft.about?.background, siteDraft.about?.interests, siteDraft.about?.strengths].filter(Boolean);
 
   return {
     profile: {

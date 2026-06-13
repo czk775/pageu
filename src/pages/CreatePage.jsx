@@ -137,15 +137,6 @@ export function CreatePage() {
             <p>输入更多信息进一步展示自己，比如兴趣爱好、专业背景、特长等</p>
           </div>
           <div className="create-grid three-grid">
-            <FormField id="about-interests" label="兴趣爱好">
-              <textarea
-                id="about-interests"
-                autoComplete="off"
-                rows={4}
-                value={createDraft.aboutInfo.interests}
-                onChange={(event) => updateAboutInfo('interests', event.target.value)}
-              />
-            </FormField>
             <FormField id="about-background" label="专业背景">
               <textarea
                 id="about-background"
@@ -153,6 +144,15 @@ export function CreatePage() {
                 rows={4}
                 value={createDraft.aboutInfo.background}
                 onChange={(event) => updateAboutInfo('background', event.target.value)}
+              />
+            </FormField>
+            <FormField id="about-interests" label="兴趣爱好">
+              <textarea
+                id="about-interests"
+                autoComplete="off"
+                rows={4}
+                value={createDraft.aboutInfo.interests}
+                onChange={(event) => updateAboutInfo('interests', event.target.value)}
               />
             </FormField>
             <FormField id="about-strengths" label="特长">
