@@ -65,6 +65,10 @@ export const normalizeSiteDraft = (siteDraft) => {
     return null;
   }
 
+  const aboutItems = normalizeArray(siteDraft.about?.items).length
+    ? normalizeArray(siteDraft.about?.items)
+    : [siteDraft.about?.interests, siteDraft.about?.background, siteDraft.about?.strengths].filter(Boolean);
+
   return {
     profile: {
       name: '',
@@ -92,6 +96,12 @@ export const normalizeSiteDraft = (siteDraft) => {
       ...siteDraft.hero,
     },
     highlights: normalizeArray(siteDraft.highlights),
+    about: {
+      interests: siteDraft.about?.interests || '',
+      background: siteDraft.about?.background || '',
+      strengths: siteDraft.about?.strengths || '',
+      items: aboutItems,
+    },
     projects: normalizeArray(siteDraft.projects).map(normalizeProject),
     experienceStory: normalizeArray(siteDraft.experienceStory),
     skills: normalizeArray(siteDraft.skills),

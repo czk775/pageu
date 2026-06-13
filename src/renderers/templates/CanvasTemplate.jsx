@@ -8,11 +8,11 @@ export function CanvasTemplate({ siteDraft }) {
   return (
     <div className="portfolio-shell portfolio-shell-canvas">
       <HeroSection siteDraft={siteDraft} variant="canvas" />
+      <AboutSection siteDraft={siteDraft} framed />
       <div className="portfolio-canvas-board">
         <ResumeSnapshot siteDraft={siteDraft} variant="canvas" />
       </div>
       <ProjectsSection siteDraft={siteDraft} layout="canvas" />
-      <AboutSection siteDraft={siteDraft} framed />
       <ContactSection siteDraft={siteDraft} variant="canvas" />
     </div>
   );

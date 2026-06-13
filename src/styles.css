@@ -3389,6 +3389,10 @@ a {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.three-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .create-field {
   display: grid;
   min-width: 0;
@@ -4122,6 +4126,7 @@ a {
 
   .basic-grid,
   .two-grid,
+  .three-grid,
   .template-grid {
     grid-template-columns: 1fr;
   }

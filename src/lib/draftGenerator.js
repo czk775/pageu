@@ -261,6 +261,19 @@ const buildResumeSnapshot = (createDraft, projects, skills, certificates) => {
   };
 };
 
+const buildAbout = (createDraft) => {
+  const interests = clean(createDraft?.aboutInfo?.interests);
+  const background = clean(createDraft?.aboutInfo?.background);
+  const strengths = clean(createDraft?.aboutInfo?.strengths);
+
+  return {
+    interests,
+    background,
+    strengths,
+    items: [interests, background, strengths].filter(Boolean),
+  };
+};
+
 const buildTheme = (template = 'neo') => {
   const themeMap = {
     neo: { primaryColor: '#22b9e9', background: '#eefbff', textColor: '#12384c' },
@@ -291,6 +304,7 @@ export const generateSiteDraft = (createDraft, analysisResult = createAnalysisRe
   const projects = toProjects(createDraft?.experiences, targetRole, analysisResult);
   const works = toWorks(createDraft, projects);
   const experienceStory = toExperienceStory(projects);
+  const about = buildAbout(createDraft);
   const intro =
     motivation ||
     selfIntro ||
@@ -370,6 +384,7 @@ export const generateSiteDraft = (createDraft, analysisResult = createAnalysisRe
       secondaryCta: '联系我',
     },
     highlights,
+    about,
     projects,
     experienceStory,
     skills,

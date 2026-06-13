@@ -68,6 +68,19 @@ export function CreateDraftProvider({ children }) {
           },
         }));
       },
+      updateAboutInfo(field, value) {
+        setCreateDraft((draft) => ({
+          ...draft,
+          aboutInfo: {
+            ...draft.aboutInfo,
+            [field]: value,
+          },
+          meta: {
+            ...draft.meta,
+            updatedAt: new Date().toISOString(),
+          },
+        }));
+      },
       updateSkillsInfo(field, value) {
         setCreateDraft((draft) => ({
           ...draft,

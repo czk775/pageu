@@ -61,6 +61,33 @@ describe('siteDraft generation', () => {
     });
   });
 
+  it('normalizes aboutInfo and renders it before resume without generated filler copy', () => {
+    const createDraft = createInitialDraft();
+    createDraft.basicInfo.name = 'About User';
+    createDraft.basicInfo.school = '示例大学';
+    createDraft.basicInfo.major = '市场营销';
+    createDraft.jobInfo.jd = '产品设计实习生，负责 AI 功能规划。';
+    createDraft.skillsInfo.keywords = 'Python、SQL、SPSS';
+    createDraft.aboutInfo.interests = '喜欢研究校园 AI 产品和消费品牌案例。';
+    createDraft.aboutInfo.background = '市场营销专业背景，关注用户洞察和增长策略。';
+    createDraft.aboutInfo.strengths = '擅长访谈、数据分析和清晰表达。';
+
+    const siteDraft = generateSiteDraft(createDraft);
+    const { container } = render(<TemplateRenderer as="main" mode="site" siteDraft={siteDraft} />);
+
+    const aboutSection = container.querySelector('#about');
+    const resumeSection = container.querySelector('#resume');
+    expect(aboutSection).toBeInTheDocument();
+    expect(resumeSection).toBeInTheDocument();
+    expect(aboutSection.compareDocumentPosition(resumeSection) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(within(aboutSection).getByText('喜欢研究校园 AI 产品和消费品牌案例。')).toBeInTheDocument();
+    expect(within(aboutSection).getByText('市场营销专业背景，关注用户洞察和增长策略。')).toBeInTheDocument();
+    expect(within(aboutSection).getByText('擅长访谈、数据分析和清晰表达。')).toBeInTheDocument();
+    expect(within(aboutSection).queryByText(/示例大学/)).not.toBeInTheDocument();
+    expect(within(aboutSection).queryByText(/目标方向/)).not.toBeInTheDocument();
+    expect(within(aboutSection).queryByText(/Python/)).not.toBeInTheDocument();
+  });
+
   it('derives a siteDraft from createDraft and analysisResult', () => {
     const createDraft = createInitialDraft();
     createDraft.basicInfo.name = '林小雨';
@@ -521,6 +548,11 @@ describe('PageU app shell', () => {
     expect(screen.queryByLabelText('个人标签 / 一句话定位')).not.toBeInTheDocument();
     expect(screen.getByLabelText('自我介绍')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('例如：我关注 AI 产品、用户洞察与商业创新，希望把技术理解转化为真实产品价值。')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: '关于我' })).toBeInTheDocument();
+    expect(screen.getByText('输入更多信息进一步展示自己，比如兴趣爱好、专业背景、特长等')).toBeInTheDocument();
+    expect(screen.getByLabelText('兴趣爱好')).toBeInTheDocument();
+    expect(screen.getByLabelText('专业背景')).toBeInTheDocument();
+    expect(screen.getByLabelText('特长')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: '岗位信息' })).toBeInTheDocument();
     expect(screen.getByLabelText('岗位 JD')).toBeRequired();
     expect(screen.getByLabelText('目标公司')).toBeInTheDocument();

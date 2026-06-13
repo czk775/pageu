@@ -8,11 +8,11 @@ export function GridTemplate({ siteDraft }) {
   return (
     <div className="portfolio-shell portfolio-shell-grid">
       <HeroSection siteDraft={siteDraft} variant="grid" />
+      <AboutSection siteDraft={siteDraft} framed />
       <div className="portfolio-bento-row">
         <ResumeSnapshot siteDraft={siteDraft} variant="grid" />
       </div>
       <ProjectsSection siteDraft={siteDraft} layout="grid" />
-      <AboutSection siteDraft={siteDraft} framed />
       <ContactSection siteDraft={siteDraft} variant="grid" />
     </div>
   );

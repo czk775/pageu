@@ -1,14 +1,10 @@
 export const getInitial = (name = '') => String(name || 'U').trim().slice(0, 1).toUpperCase() || 'U';
 
 export const getAboutCopy = (siteDraft) => {
-  const profile = siteDraft.profile || {};
-  const schoolLine = [profile.school, profile.major].filter(Boolean).join(' / ');
-  const skills = (siteDraft.skills || []).slice(0, 3).join('、');
-  const roleLine = profile.targetRole ? `目标方向：${profile.targetRole}。` : '';
-  const identityLine = schoolLine ? `${schoolLine} 背景。` : '';
-  const skillLine = skills ? `关注 ${skills} 等能力在项目中的真实落地。` : '';
+  const about = siteDraft.about || {};
+  const items = Array.isArray(about.items) ? about.items : [about.interests, about.background, about.strengths];
 
-  return [identityLine, roleLine, skillLine].filter(Boolean).slice(0, 3);
+  return items.map((item) => String(item || '').trim()).filter(Boolean).slice(0, 3);
 };
 
 export const splitActionPoints = (project) => {

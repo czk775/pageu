@@ -25,6 +25,7 @@ export function CreatePage() {
   const {
     createDraft,
     updateBasicInfo,
+    updateAboutInfo,
     updateJobInfo,
     updateSkillsInfo,
     addExperience,
@@ -125,6 +126,42 @@ export function CreatePage() {
                 rows={4}
                 value={createDraft.basicInfo.selfIntro}
                 onChange={(event) => updateBasicInfo('selfIntro', event.target.value)}
+              />
+            </FormField>
+          </div>
+        </section>
+
+        <section className="create-block" aria-labelledby="about-info-title">
+          <div className="block-title-row">
+            <h2 id="about-info-title">关于我</h2>
+            <p>输入更多信息进一步展示自己，比如兴趣爱好、专业背景、特长等</p>
+          </div>
+          <div className="create-grid three-grid">
+            <FormField id="about-interests" label="兴趣爱好">
+              <textarea
+                id="about-interests"
+                autoComplete="off"
+                rows={4}
+                value={createDraft.aboutInfo.interests}
+                onChange={(event) => updateAboutInfo('interests', event.target.value)}
+              />
+            </FormField>
+            <FormField id="about-background" label="专业背景">
+              <textarea
+                id="about-background"
+                autoComplete="off"
+                rows={4}
+                value={createDraft.aboutInfo.background}
+                onChange={(event) => updateAboutInfo('background', event.target.value)}
+              />
+            </FormField>
+            <FormField id="about-strengths" label="特长">
+              <textarea
+                id="about-strengths"
+                autoComplete="off"
+                rows={4}
+                value={createDraft.aboutInfo.strengths}
+                onChange={(event) => updateAboutInfo('strengths', event.target.value)}
               />
             </FormField>
           </div>

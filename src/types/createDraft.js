@@ -29,6 +29,11 @@ export const createInitialDraft = () => ({
     selfIntro: '',
     personalTagline: '',
   },
+  aboutInfo: {
+    interests: '',
+    background: '',
+    strengths: '',
+  },
   jobInfo: {
     jd: '',
     company: '',
@@ -98,6 +103,10 @@ export const normalizeDraft = (draft) => {
     jobInfo: {
       ...initialDraft.jobInfo,
       ...draft.jobInfo,
+    },
+    aboutInfo: {
+      ...initialDraft.aboutInfo,
+      ...draft.aboutInfo,
     },
     skillsInfo: {
       ...initialDraft.skillsInfo,
