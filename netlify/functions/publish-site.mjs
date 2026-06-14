@@ -1,14 +1,13 @@
 import { getStore } from '@netlify/blobs';
 
-const jsonHeaders = {
-  'Content-Type': 'application/json; charset=utf-8',
-};
-
-const createJsonResponse = (statusCode, payload) => ({
-  statusCode,
-  headers: jsonHeaders,
-  body: JSON.stringify(payload),
-});
+const createJsonResponse = (payload, init = {}) =>
+  Response.json(payload, {
+    status: init.status || 200,
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      ...(init.headers || {}),
+    },
+  });
 
 const createSiteId = () => {
   const randomPart =
@@ -19,36 +18,33 @@ const createSiteId = () => {
   return `pageu-${Date.now().toString(36)}-${randomPart}`;
 };
 
-const getRequestOrigin = (event, bodyOrigin) => {
+const getRequestOrigin = (request, bodyOrigin) => {
   if (typeof bodyOrigin === 'string' && /^https?:\/\//.test(bodyOrigin)) {
     return bodyOrigin.replace(/\/$/, '');
   }
 
-  const host = event.headers?.host || event.headers?.Host;
-  const protocol = event.headers?.['x-forwarded-proto'] || 'https';
-
-  return host ? `${protocol}://${host}` : '';
+  return new URL(request.url).origin;
 };
 
-export async function handler(event) {
-  if (event.httpMethod === 'OPTIONS') {
-    return createJsonResponse(200, { ok: true });
+export default async function publishSite(request) {
+  if (request.method === 'OPTIONS') {
+    return createJsonResponse({ ok: true });
   }
 
-  if (event.httpMethod !== 'POST') {
-    return createJsonResponse(405, { error: 'Method not allowed' });
+  if (request.method !== 'POST') {
+    return createJsonResponse({ error: 'Method not allowed' }, { status: 405 });
   }
 
   try {
-    const body = JSON.parse(event.body || '{}');
+    const body = await request.json();
 
     if (!body.siteDraft || typeof body.siteDraft !== 'object') {
-      return createJsonResponse(400, { error: 'Missing siteDraft' });
+      return createJsonResponse({ error: 'Missing siteDraft' }, { status: 400 });
     }
 
     const siteId = createSiteId();
     const publishedAt = new Date().toISOString();
-    const origin = getRequestOrigin(event, body.origin);
+    const origin = getRequestOrigin(request, body.origin);
     const siteUrl = `${origin}/site/${siteId}`;
     const siteDraft = {
       ...body.siteDraft,
@@ -63,15 +59,18 @@ export async function handler(event) {
     const store = getStore({ name: 'pageu-sites', consistency: 'strong' });
     await store.setJSON(siteId, siteDraft);
 
-    return createJsonResponse(200, {
+    return createJsonResponse({
       siteId,
       siteUrl,
       publishedAt,
     });
   } catch (error) {
-    return createJsonResponse(500, {
-      error: 'Failed to publish site',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    });
+    return createJsonResponse(
+      {
+        error: 'Failed to publish site',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 },
+    );
   }
 }

@@ -1,26 +1,25 @@
 import { getStore } from '@netlify/blobs';
 
-const jsonHeaders = {
-  'Content-Type': 'application/json; charset=utf-8',
-};
-
-const createJsonResponse = (statusCode, payload) => ({
-  statusCode,
-  headers: jsonHeaders,
-  body: JSON.stringify(payload),
-});
+const createJsonResponse = (payload, init = {}) =>
+  Response.json(payload, {
+    status: init.status || 200,
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      ...(init.headers || {}),
+    },
+  });
 
 const isValidSiteId = (siteId) => /^[a-zA-Z0-9_-]{4,80}$/.test(siteId || '');
 
-export async function handler(event) {
-  if (event.httpMethod !== 'GET') {
-    return createJsonResponse(405, { error: 'Method not allowed' });
+export default async function getSite(request) {
+  if (request.method !== 'GET') {
+    return createJsonResponse({ error: 'Method not allowed' }, { status: 405 });
   }
 
-  const siteId = event.queryStringParameters?.id || '';
+  const siteId = new URL(request.url).searchParams.get('id') || '';
 
   if (!isValidSiteId(siteId)) {
-    return createJsonResponse(400, { error: 'Invalid site id' });
+    return createJsonResponse({ error: 'Invalid site id' }, { status: 400 });
   }
 
   try {
@@ -28,17 +27,20 @@ export async function handler(event) {
     const siteDraft = await store.get(siteId, { type: 'json' });
 
     if (!siteDraft) {
-      return createJsonResponse(404, { error: 'Site not found' });
+      return createJsonResponse({ error: 'Site not found' }, { status: 404 });
     }
 
-    return createJsonResponse(200, {
+    return createJsonResponse({
       siteId,
       siteDraft,
     });
   } catch (error) {
-    return createJsonResponse(500, {
-      error: 'Failed to load site',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    });
+    return createJsonResponse(
+      {
+        error: 'Failed to load site',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 },
+    );
   }
 }
