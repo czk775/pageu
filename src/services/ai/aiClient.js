@@ -9,6 +9,16 @@ const clampArray = (items, fallback) => {
   return [...new Set([...source, ...fallback].map((item) => String(item || '').trim()).filter(Boolean))].slice(0, 6);
 };
 
+const removeGenericDisplayOrder = (items, fallbackItems) => {
+  const hasRealExperienceTitle = fallbackItems.some((item) => !['项目经历', '比赛经历', '校园经历', '技能证书', '教育背景', '联系方式'].includes(item));
+
+  if (!hasRealExperienceTitle) {
+    return items;
+  }
+
+  return items.filter((item) => item !== '项目经历');
+};
+
 const stripCodeFence = (content) =>
   content
     .trim()
@@ -39,7 +49,7 @@ const parseAnalysisContent = (content) => {
 export const normalizeAnalysisPayload = (payload, fallbackResult, meta) => ({
   jobKeywords: clampArray(payload?.jobKeywords, fallbackResult.jobKeywords),
   abilityFocus: clampArray(payload?.abilityFocus, fallbackResult.abilityFocus),
-  displayOrder: clampArray(payload?.displayOrder, fallbackResult.displayOrder),
+  displayOrder: removeGenericDisplayOrder(clampArray(payload?.displayOrder, fallbackResult.displayOrder), fallbackResult.displayOrder).slice(0, 6),
   highlightedExperiences: clampArray(payload?.highlightedExperiences, fallbackResult.highlightedExperiences),
   userAdjustment: fallbackResult.userAdjustment,
   updatedAt: meta.updatedAt,

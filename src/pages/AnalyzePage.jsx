@@ -6,6 +6,8 @@ import { FloatingAssistant } from '../components/FloatingAssistant';
 import { GlassCard } from '../components/GlassCard';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { StatusToast } from '../components/StatusToast';
+import { generateSiteDraft } from '../lib/draftGenerator';
+import { PUBLIC_SITE_PATH, saveSiteDraft } from '../lib/storage';
 import { analyzeCareerDraft } from '../services/ai/aiClient';
 import { useCreateDraft } from '../state/CreateDraftContext';
 
@@ -63,6 +65,11 @@ export function AnalyzePage() {
   const handleReanalyze = async () => {
     await runAnalysis(userAdjustment);
     setAnalysisMessage('已根据你的补充重新整理理解');
+  };
+
+  const handleConfirmGenerate = () => {
+    saveSiteDraft(generateSiteDraft(createDraft, analysisResult || undefined));
+    navigate(PUBLIC_SITE_PATH);
   };
 
   const pageTitle = analysisStatus === 'loading' ? '分析中' : '分析结果';
@@ -127,7 +134,7 @@ export function AnalyzePage() {
         ) : null}
 
         <div className="analyze-actions">
-          <PrimaryButton icon={ArrowRight} onClick={() => navigate('/editor', { state: { regenerateSiteDraft: true } })}>
+          <PrimaryButton icon={ArrowRight} onClick={handleConfirmGenerate}>
             确认生成
           </PrimaryButton>
           <button className="adjust-action" type="button" onClick={() => setAdjustmentOpen((open) => !open)}>

@@ -18,10 +18,15 @@ export const readJsonStorage = (key) => {
 
 export const writeJsonStorage = (key, value) => {
   if (typeof window === 'undefined') {
-    return;
+    return false;
   }
 
-  window.localStorage.setItem(key, JSON.stringify(value));
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch {
+    return false;
+  }
 };
 
 export const loadSiteDraft = (fallbackDraft) => {

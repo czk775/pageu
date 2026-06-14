@@ -3,7 +3,7 @@ import { ArrowLeft, ArrowRight, ExternalLink } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { generateSiteDraft } from '../lib/draftGenerator';
 import { loadSiteDraft } from '../lib/storage';
-import { getInitial, getProjectValue, splitActionPoints } from '../renderers/shared/portfolioUtils';
+import { getInitial } from '../renderers/shared/portfolioUtils';
 import { useCreateDraft } from '../state/CreateDraftContext';
 import { createAnalysisResult } from '../types/analysisResult';
 
@@ -17,8 +17,7 @@ export function ProjectDetailPage() {
   const project = projects.find((item) => item.id === projectId) || projects[0];
   const currentIndex = Math.max(projects.findIndex((item) => item.id === project?.id), 0);
   const nextProject = projects[(currentIndex + 1) % Math.max(projects.length, 1)];
-  const star = project?.star || {};
-  const actionPoints = Array.isArray(star.action) && star.action.length ? star.action : splitActionPoints(project || {});
+  const originalExperience = project?.originalDescription || project?.description || '暂未填写项目经历。';
 
   if (!project) {
     return (
@@ -76,34 +75,14 @@ export function ProjectDetailPage() {
         </section>
 
         <section className="project-detail-story">
-          <article>
+          <article className="project-detail-overview">
             <span>01</span>
-            <h2>项目背景</h2>
-            <p>{star.situation || project.background || project.summary}</p>
-          </article>
-          <article>
-            <span>02</span>
-            <h2>我的目标</h2>
-            <p>{star.task || project.goal || '把真实经历整理成招聘方容易理解的作品集案例。'}</p>
-          </article>
-          <article>
-            <span>03</span>
-            <h2>我的行动</h2>
-            <ul>
-              {actionPoints.map((point) => (
-                <li key={point}>{point}</li>
-              ))}
-            </ul>
-          </article>
-          <article>
-            <span>04</span>
-            <h2>产出结果</h2>
-            <p>{star.result || getProjectValue(project)}</p>
-          </article>
-          <article>
-            <span>05</span>
-            <h2>我学到了什么</h2>
-            <p>{project.learning || project.jdRelevance || '这个项目让我更熟悉从问题拆解、方案推进到结果表达的完整过程。'}</p>
+            <div>
+              <h2>项目概述</h2>
+              <p className="project-detail-original-experience" data-testid="project-original-experience" style={{ whiteSpace: 'pre-line' }}>
+                {originalExperience}
+              </p>
+            </div>
           </article>
         </section>
 

@@ -6,19 +6,8 @@ import { FormField } from '../components/FormField';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { TemplateCard } from '../components/TemplateCard';
 import { templates } from '../data/templates';
+import { readImagePreview } from '../lib/imagePreview';
 import { useCreateDraft } from '../state/CreateDraftContext';
-
-const readImagePreview = (file, onLoad) => {
-  if (!file) {
-    onLoad('');
-    return;
-  }
-
-  const reader = new FileReader();
-  reader.onload = () => onLoad(typeof reader.result === 'string' ? reader.result : '');
-  reader.onerror = () => onLoad('');
-  reader.readAsDataURL(file);
-};
 
 export function CreatePage() {
   const navigate = useNavigate();

@@ -40,6 +40,8 @@ const normalizeProject = (project = {}, index = 0) => ({
   role: project.role || '',
   period: project.period || '',
   summary: project.summary || project.description || '',
+  description: project.description || '',
+  originalDescription: project.originalDescription || project.description || '',
   coverUrl: project.coverUrl || '',
   externalLink: project.externalLink || project.link || '',
   link: project.externalLink || project.link || '',

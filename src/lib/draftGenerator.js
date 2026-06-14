@@ -143,6 +143,7 @@ const toProjects = (experiences = [], targetRole, analysisResult) => {
       period: clean(experience.period),
       summary: clean(experience.summary),
       description: clean(experience.description),
+      originalDescription: clean(experience.description),
       coverUrl: cleanPreviewUrl(experience.coverUrl),
       link: clean(experience.link),
     }))
@@ -158,6 +159,7 @@ const toProjects = (experiences = [], targetRole, analysisResult) => {
           period: '',
           summary: '把你的项目、比赛或校园实践整理成更适合展示的故事。',
           description: '',
+          originalDescription: '',
           coverUrl: '',
           link: '',
         },
@@ -177,6 +179,7 @@ const toProjects = (experiences = [], targetRole, analysisResult) => {
       role,
       period: experience.period,
       summary,
+      originalDescription: experience.originalDescription || experience.description,
       coverUrl: experience.coverUrl,
       externalLink: experience.link,
       link: experience.link,

@@ -2,9 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { usePortfolioMotion } from './PortfolioMotionContext';
 
 const navItems = [
-  { id: 'about', label: '关于我' },
-  { id: 'featured-projects', label: '项目' },
   { id: 'resume', label: '简历' },
+  { id: 'featured-projects', label: '项目' },
   { id: 'contact', label: '联系我' },
 ];
 

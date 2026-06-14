@@ -1,6 +1,7 @@
 const fallbackKeywords = ['产品设计', '需求分析', 'AI 理解', '沟通协作', '项目落地'];
 const fallbackAbilities = ['产品思维', '技术理解', '表达能力', '执行力', '用户洞察'];
 const fallbackDisplayOrder = ['项目经历', '比赛经历', '校园经历', '技能证书'];
+const fallbackDisplayOrderAfterRealTitles = ['技能证书', '教育背景', '联系方式'];
 const fallbackExperiences = ['校园项目经历', '比赛协作经历', '社团实践经历'];
 
 const keywordRules = [
@@ -43,7 +44,10 @@ export const createAnalysisResult = (createDraft, userAdjustment = '') => {
     .map((experience) => experience.title?.trim())
     .filter(Boolean);
 
-  const displayOrder = unique([...experienceTitles, ...fallbackDisplayOrder]).slice(0, 4);
+  const displayOrder = unique([
+    ...experienceTitles,
+    ...(experienceTitles.length > 0 ? fallbackDisplayOrderAfterRealTitles : fallbackDisplayOrder),
+  ]).slice(0, 4);
   const highlightedExperiences = (experienceTitles.length > 0 ? experienceTitles : fallbackExperiences).slice(0, 3);
 
   return {

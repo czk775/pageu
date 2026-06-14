@@ -4841,6 +4841,34 @@ a {
   padding-left: 20px;
 }
 
+.project-detail-story .project-detail-overview {
+  grid-template-columns: 84px minmax(0, 1fr);
+}
+
+.project-detail-overview h2 {
+  margin-bottom: 18px;
+  font-size: clamp(22px, 2.2vw, 32px);
+}
+
+.project-detail-original-experience {
+  white-space: pre-line;
+}
+
+.project-detail-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px 32px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 34px;
+  padding-top: 30px;
+  border-top: 1px solid rgba(18, 56, 76, 0.12);
+}
+
+.project-detail-links h2 {
+  margin: 0;
+}
+
 .project-detail-bottom {
   display: flex;
   flex-wrap: wrap;
@@ -4933,8 +4961,8 @@ a {
 
 .portfolio-hero-horizontal-tab {
   display: grid;
-  grid-template-columns: minmax(220px, 0.82fr) minmax(0, 1.18fr);
-  gap: clamp(18px, 3vw, 34px);
+  grid-template-columns: minmax(260px, 0.9fr) minmax(320px, 1.1fr);
+  gap: clamp(24px, 4vw, 58px);
   align-items: stretch;
   width: 100%;
   min-height: clamp(340px, 48vh, 540px);
@@ -4975,18 +5003,52 @@ a {
 .portfolio-hero-tab-copy {
   display: flex;
   align-items: center;
+  justify-content: center;
   min-width: 0;
-  padding: clamp(10px, 3vw, 42px);
+  padding: clamp(18px, 3.6vw, 54px);
+}
+
+.portfolio-hero-intro-card {
+  width: min(100%, 620px);
+  padding: clamp(24px, 4vw, 46px);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: clamp(24px, 3vw, 34px);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.36)),
+    color-mix(in srgb, var(--generated-primary), white 90%);
+  box-shadow: 0 22px 70px rgba(18, 56, 76, 0.1);
+  backdrop-filter: blur(18px);
+}
+
+.portfolio-hero-intro-card span {
+  display: inline-flex;
+  margin-bottom: 16px;
+  color: color-mix(in srgb, var(--generated-primary), var(--generated-text) 38%);
+  font-size: 13px;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .portfolio-hero-self-intro {
-  max-width: 18em;
+  max-width: 24em;
   margin: 0;
   color: var(--generated-text);
-  font-size: clamp(28px, 4.4vw, 58px);
-  font-weight: 900;
-  line-height: 1.18;
+  font-size: clamp(18px, 1.55vw, 24px);
+  font-weight: 680;
+  line-height: 1.9;
   letter-spacing: 0;
+}
+
+.portfolio-hero-intro-body {
+  display: grid;
+  gap: 10px;
+}
+
+.portfolio-hero-intro-paragraph {
+  text-align: left;
+  text-indent: 2em;
+  text-wrap: pretty;
 }
 
 @media (max-width: 900px) {
@@ -5019,7 +5081,11 @@ a {
     padding: 8px;
   }
 
+  .portfolio-hero-intro-card {
+    padding: 22px;
+  }
+
   .portfolio-hero-self-intro {
-    font-size: clamp(24px, 8vw, 38px);
+    font-size: clamp(17px, 4.8vw, 22px);
   }
 }
