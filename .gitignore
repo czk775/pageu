@@ -2,6 +2,7 @@ node_modules
 dist
 .env
 .env.local
+*.local
 npm-debug.log*
 pnpm-debug.log*
 yarn-debug.log*
