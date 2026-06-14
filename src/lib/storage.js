@@ -67,7 +67,8 @@ export const savePublishDraft = (publishDraft) =>
     createPublishDraft({
       ...publishDraft,
       published: true,
-      siteId: 'demo',
+      siteId: publishDraft?.siteId || 'demo',
+      siteUrl: publishDraft?.siteUrl || `/site/${publishDraft?.siteId || 'demo'}`,
     }),
   );
 

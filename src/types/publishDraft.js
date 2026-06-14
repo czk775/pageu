@@ -3,6 +3,7 @@ export const PUBLISH_STORAGE_KEY = 'pageu.publish';
 export const createPublishDraft = (overrides = {}) => ({
   published: true,
   siteId: 'demo',
+  siteUrl: '/site/demo',
   visibility: 'public',
   publishedAt: new Date().toISOString(),
   ...overrides,
@@ -16,6 +17,7 @@ export const normalizePublishDraft = (publishDraft) => {
   return createPublishDraft({
     published: publishDraft.published ?? true,
     siteId: publishDraft.siteId || 'demo',
+    siteUrl: publishDraft.siteUrl || `/site/${publishDraft.siteId || 'demo'}`,
     visibility: publishDraft.visibility || 'public',
     publishedAt: publishDraft.publishedAt || new Date().toISOString(),
   });

@@ -8,6 +8,7 @@ import { compressImageDataUrl } from './lib/imagePreview';
 import { TemplateRenderer } from './renderers/TemplateRenderer';
 import { analyzeCareerDraft, normalizeAnalysisPayload } from './services/ai/aiClient';
 import { answerAssistantQuestion } from './services/ai/assistantChat';
+import { publishSiteDraft } from './services/publish/sitePublisher';
 import { createAnalysisResult } from './types/analysisResult';
 import { createInitialDraft, DRAFT_STORAGE_KEY, normalizeDraft } from './types/createDraft';
 import { PUBLISH_STORAGE_KEY } from './types/publishDraft';
@@ -1451,5 +1452,119 @@ describe('PageU app shell', () => {
     );
 
     expect(screen.getByRole('main')).toHaveClass('template-flow-site');
+  });
+
+  it('publishes the generated site from the floating action and shows a share link with qr code', async () => {
+    const user = userEvent.setup();
+    const createDraft = createInitialDraft();
+    createDraft.basicInfo.name = '发布用户';
+    createDraft.basicInfo.selfIntro = '这是一段用于发布的个人介绍。';
+    const siteDraft = generateSiteDraft(createDraft);
+    localStorage.setItem(SITE_DRAFT_STORAGE_KEY, JSON.stringify(siteDraft));
+
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        siteId: 'published-123',
+        siteUrl: 'https://pageu-ai-career.netlify.app/site/published-123',
+        publishedAt: '2026-06-14T10:00:00.000Z',
+      }),
+    });
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = fetchMock;
+
+    try {
+      render(
+        <MemoryRouter initialEntries={['/site/demo']}>
+          <App />
+        </MemoryRouter>,
+      );
+
+      await user.click(screen.getByRole('button', { name: '上线发布' }));
+
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/.netlify/functions/publish-site',
+        expect.objectContaining({
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      );
+      const requestBody = JSON.parse(fetchMock.mock.calls[0][1].body);
+      expect(requestBody.siteDraft.profile.name).toBe('发布用户');
+
+      expect(await screen.findByRole('dialog', { name: '发布成功' })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'https://pageu-ai-career.netlify.app/site/published-123' })).toHaveAttribute(
+        'href',
+        'https://pageu-ai-career.netlify.app/site/published-123',
+      );
+      expect(await screen.findByRole('img', { name: '上线网站二维码' })).toBeInTheDocument();
+      expect(JSON.parse(localStorage.getItem(PUBLISH_STORAGE_KEY))).toMatchObject({
+        siteId: 'published-123',
+        siteUrl: 'https://pageu-ai-career.netlify.app/site/published-123',
+      });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it('loads a published site draft by site id when local draft is unavailable', async () => {
+    const remoteDraft = generateSiteDraft(createInitialDraft());
+    remoteDraft.profile.name = '线上用户';
+    remoteDraft.profile.selfIntro = '这是从线上读取的个人网站。';
+    remoteDraft.hero.subtitle = '这是从线上读取的个人网站。';
+
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ siteDraft: remoteDraft }),
+    });
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = fetchMock;
+
+    try {
+      render(
+        <MemoryRouter initialEntries={['/site/published-123']}>
+          <App />
+        </MemoryRouter>,
+      );
+
+      expect(fetchMock).toHaveBeenCalledWith('/.netlify/functions/get-site?id=published-123');
+      expect(await screen.findByRole('link', { name: '线上用户' })).toBeInTheDocument();
+      expect(screen.getByText('这是从线上读取的个人网站。')).toBeInTheDocument();
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+});
+
+describe('published site service', () => {
+  it('posts siteDraft to the Netlify publish function and returns a shareable result', async () => {
+    const siteDraft = generateSiteDraft(createInitialDraft());
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        siteId: 'site-abc',
+        siteUrl: 'https://pageu-ai-career.netlify.app/site/site-abc',
+        publishedAt: '2026-06-14T10:00:00.000Z',
+      }),
+    });
+
+    const result = await publishSiteDraft(siteDraft, { fetcher: fetchMock, origin: 'https://pageu-ai-career.netlify.app' });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/.netlify/functions/publish-site',
+      expect.objectContaining({
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({
+      origin: 'https://pageu-ai-career.netlify.app',
+      siteDraft,
+    });
+    expect(result).toMatchObject({
+      siteId: 'site-abc',
+      siteUrl: 'https://pageu-ai-career.netlify.app/site/site-abc',
+      publishedAt: '2026-06-14T10:00:00.000Z',
+    });
   });
 });
