@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Copy, Download, Rocket } from 'lucide-react';
 import QRCode from 'qrcode';
 import { generateSiteDraft } from '../lib/draftGenerator';
-import { loadSiteDraft, savePublishDraft, toSvgDataUrl } from '../lib/storage';
+import { loadSiteDraft, resetPageUState, savePublishDraft, toSvgDataUrl } from '../lib/storage';
 import { TemplateRenderer } from '../renderers/TemplateRenderer';
 import { loadPublishedSiteDraft, publishSiteDraft } from '../services/publish/sitePublisher';
 import { useCreateDraft } from '../state/CreateDraftContext';
@@ -14,7 +14,7 @@ import { StatusToast } from '../components/StatusToast';
 export function GeneratedSitePage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { createDraft } = useCreateDraft();
+  const { createDraft, resetDraft } = useCreateDraft();
   const analysisResult = useMemo(() => createAnalysisResult(createDraft), [createDraft]);
   const generatedDraft = useMemo(() => generateSiteDraft(createDraft, analysisResult), [analysisResult, createDraft]);
   const fallbackSiteDraft = useMemo(() => loadSiteDraft(generatedDraft), [generatedDraft]);
@@ -23,13 +23,14 @@ export function GeneratedSitePage() {
   const [publishResult, setPublishResult] = useState(null);
   const [qrCodeUrl, setQrCodeUrl] = useState('');
   const [toastMessage, setToastMessage] = useState('');
+  const isDemoSite = !id || id === 'demo';
 
   useEffect(() => {
     setSiteDraft(fallbackSiteDraft);
   }, [fallbackSiteDraft]);
 
   useEffect(() => {
-    if (!id || id === 'demo') {
+    if (isDemoSite) {
       return undefined;
     }
 
@@ -52,7 +53,7 @@ export function GeneratedSitePage() {
     return () => {
       active = false;
     };
-  }, [id]);
+  }, [id, isDemoSite]);
 
   useEffect(() => {
     if (!publishResult?.siteUrl) {
@@ -83,8 +84,8 @@ export function GeneratedSitePage() {
   }, [publishResult]);
 
   const handleCreateNewSite = () => {
-    // Demo stage: keep current inputs and published draft so presenters can return without re-entering content.
-    // The retained resetPageUState/resetDraft utilities can be restored for a production "fresh start" action.
+    resetPageUState();
+    resetDraft();
     navigate('/create');
   };
 
@@ -151,16 +152,18 @@ export function GeneratedSitePage() {
           },
         }}
       />
-      <div className="generated-site-floating-actions" aria-label="个人网站操作">
-        <button className="generated-publish-action" type="button" disabled={isPublishing} onClick={handlePublish}>
-          <Rocket size={18} aria-hidden="true" />
-          {isPublishing ? '发布中...' : '上线发布'}
-        </button>
-        <button className="generated-new-site-action" type="button" onClick={handleCreateNewSite}>
-          创建新的个人网站
-        </button>
-      </div>
-      {publishResult ? (
+      {isDemoSite ? (
+        <div className="generated-site-floating-actions" aria-label="个人网站操作">
+          <button className="generated-publish-action" type="button" disabled={isPublishing} onClick={handlePublish}>
+            <Rocket size={18} aria-hidden="true" />
+            {isPublishing ? '发布中...' : '上线发布'}
+          </button>
+          <button className="generated-new-site-action" type="button" onClick={handleCreateNewSite}>
+            创建新的个人网站
+          </button>
+        </div>
+      ) : null}
+      {isDemoSite && publishResult ? (
         <section className="generated-publish-panel" role="dialog" aria-label="发布成功">
           <div>
             <span>发布成功</span>
