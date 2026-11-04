@@ -136,7 +136,6 @@ describe('siteDraft generation', () => {
     const resumeSection = container.querySelector('#resume');
     expect(aboutSection).toBeInTheDocument();
     expect(resumeSection).toBeInTheDocument();
-    expect(aboutSection.compareDocumentPosition(resumeSection) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(within(aboutSection).getByText('喜欢研究校园 AI 产品和消费品牌案例。')).toBeInTheDocument();
     const backgroundCopy = within(aboutSection).getByText('市场营销专业背景，关注用户洞察和增长策略。');
     const interestsCopy = within(aboutSection).getByText('喜欢研究校园 AI 产品和消费品牌案例。');
@@ -264,27 +263,27 @@ describe('siteDraft generation', () => {
     render(<TemplateRenderer siteDraft={siteDraft} />);
     expect(screen.queryByRole('link', { name: '作品链接' })).not.toBeInTheDocument();
 
-    const templateClasses = ['neo', 'pure', 'flow', 'grid', 'canvas', 'glass'].map((template) => {
+    const templateClasses = ['resume', 'developer', 'case', 'cinematic'].map((template) => {
       const { container, unmount } = render(<TemplateRenderer siteDraft={{ ...siteDraft, template }} />);
       const className = container.firstChild.className;
       unmount();
       return className;
     });
 
-    expect(new Set(templateClasses).size).toBe(6);
-    expect(templateClasses).toEqual(expect.arrayContaining([expect.stringMatching(/template-neo-site/)]));
-    expect(templateClasses).toEqual(expect.arrayContaining([expect.stringMatching(/template-canvas-site/)]));
+    expect(new Set(templateClasses).size).toBe(4);
+    expect(templateClasses).toEqual(expect.arrayContaining([expect.stringMatching(/template-resume-site/)]));
+    expect(templateClasses).toEqual(expect.arrayContaining([expect.stringMatching(/template-cinematic-site/)]));
   });
 
   it('renders TemplateRenderer in separate site and preview modes', () => {
     const createDraft = createInitialDraft();
     createDraft.basicInfo.name = 'Portfolio User';
-    createDraft.template = 'neo';
+    createDraft.template = 'resume';
     const siteDraft = generateSiteDraft(createDraft);
 
     const { container, rerender } = render(<TemplateRenderer as="main" mode="site" siteDraft={siteDraft} />);
     expect(container.firstChild).toHaveClass('portfolio-site-mode');
-    expect(container.querySelector('.portfolio-shell')).toBeInTheDocument();
+    expect(container.querySelector('.portfolio-site-canvas')).toBeInTheDocument();
     expect(container.querySelector('.portfolio-preview-scale')).not.toBeInTheDocument();
 
     rerender(<TemplateRenderer mode="preview" previewMode="mobile" siteDraft={siteDraft} />);
@@ -296,17 +295,17 @@ describe('siteDraft generation', () => {
   it('marks generated portfolio sections for storytelling motion', () => {
     const createDraft = createInitialDraft();
     createDraft.basicInfo.name = 'Portfolio User';
-    createDraft.template = 'glass';
+    createDraft.template = 'cinematic';
     const siteDraft = generateSiteDraft(createDraft);
 
     const { container } = render(<TemplateRenderer as="main" mode="site" siteDraft={siteDraft} />);
 
     expect(container.firstChild).toHaveClass('portfolio-motion-ready');
     expect(container.firstChild).toHaveAttribute('data-reduced-motion', 'false');
-    expect(container.querySelector('[data-motion-section="about"]')).toBeInTheDocument();
-    expect(container.querySelector('[data-motion-section="projects"]')).toBeInTheDocument();
-    expect(container.querySelector('[data-motion-section="resume"]')).toBeInTheDocument();
-    expect(container.querySelector('[data-motion-section="contact"]')).toBeInTheDocument();
+    expect(container.querySelector('#top')).toBeInTheDocument();
+    expect(container.querySelector('#featured-projects')).toBeInTheDocument();
+    expect(container.querySelector('#resume')).toBeInTheDocument();
+    expect(container.querySelector('#contact')).toBeInTheDocument();
   });
 
   it('respects reduced motion preferences without breaking rendering', () => {
@@ -349,10 +348,9 @@ describe('siteDraft generation', () => {
     expect(within(nav).queryByRole('link', { name: '关于我' })).not.toBeInTheDocument();
     const hero = screen.getByRole('region', { name: 'Portfolio hero' });
     expect(within(nav).getByRole('link', { name: 'Portfolio User' })).toHaveAttribute('href', '#top');
-    expect(document.querySelector('.portfolio-hero-horizontal-tab')).toBeInTheDocument();
-    expect(within(hero).queryByText('Product Designer Intern')).not.toBeInTheDocument();
+    expect(within(hero).getByText('Product Designer Intern')).toBeInTheDocument();
     expect(within(hero).getByText('我希望把复杂经历整理成清晰的作品集表达。')).toBeInTheDocument();
-    expect(within(hero).queryByRole('link', { name: '查看项目' })).not.toBeInTheDocument();
+    expect(within(hero).getByRole('link', { name: '查看项目' })).toBeInTheDocument();
   });
 
   it('renders the uploaded profile photo when the draft stores photoUrl', () => {
@@ -383,17 +381,15 @@ describe('siteDraft generation', () => {
     const { container } = render(<TemplateRenderer as="main" mode="site" siteDraft={siteDraft} />);
 
     const hero = screen.getByRole('region', { name: 'Portfolio hero' });
-    const horizontalTab = container.querySelector('.portfolio-hero-horizontal-tab');
-    expect(horizontalTab).toBeInTheDocument();
     expect(within(hero).getByRole('img', { name: 'Horizontal User 的头像' })).toHaveAttribute(
       'src',
       'data:image/png;base64,horizontal-avatar',
     );
     const intro = within(hero).getByText('This is the self intro from basic info.');
     expect(intro).toBeInTheDocument();
-    expect(intro).toHaveClass('portfolio-hero-intro-card-copy');
-    expect(container.querySelector('.portfolio-hero-intro-card')).toBeInTheDocument();
-    expect(container.querySelector('.portfolio-hero-bento-main')).not.toBeInTheDocument();
+    expect(container.querySelector('#top')).toBeInTheDocument();
+    expect(container.querySelector('#resume')).toBeInTheDocument();
+    expect(container.querySelector('#featured-projects')).toBeInTheDocument();
   });
 
   it('formats long hero self intro as indented readable paragraphs', () => {
@@ -402,16 +398,12 @@ describe('siteDraft generation', () => {
     createDraft.basicInfo.selfIntro = '我是曹栓康，来自山东济宁。喜欢观察问题，理解用户。希望未来持续探索 AI 与商业的结合。';
     const siteDraft = generateSiteDraft(createDraft);
 
-    const { container } = render(<TemplateRenderer as="main" mode="site" siteDraft={siteDraft} />);
+    render(<TemplateRenderer as="main" mode="site" siteDraft={siteDraft} />);
 
-    const paragraphs = [...container.querySelectorAll('.portfolio-hero-intro-card-copy')];
-    expect(paragraphs).toHaveLength(3);
-    expect(paragraphs[0]).toHaveTextContent('我是曹栓康，来自山东济宁。');
-    expect(paragraphs[1]).toHaveTextContent('喜欢观察问题，理解用户。');
-    expect(paragraphs[2]).toHaveTextContent('希望未来持续探索 AI 与商业的结合。');
-    paragraphs.forEach((paragraph) => {
-      expect(paragraph).toHaveClass('portfolio-hero-intro-paragraph');
-    });
+    const hero = screen.getByRole('region', { name: 'Portfolio hero' });
+    expect(within(hero).getByText('我是曹栓康，来自山东济宁。')).toBeInTheDocument();
+    expect(within(hero).getByText('喜欢观察问题，理解用户。')).toBeInTheDocument();
+    expect(within(hero).getByText('希望未来持续探索 AI 与商业的结合。')).toBeInTheDocument();
   });
 
   it('does not use JD section labels as the hero target role', () => {
@@ -471,7 +463,7 @@ describe('siteDraft generation', () => {
 
     const { container } = render(<TemplateRenderer mode="site" siteDraft={siteDraft} />);
 
-    expect(screen.getAllByText('查看项目 →').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('查看项目').length).toBeGreaterThan(0);
     expect(screen.queryByText('我做了什么')).not.toBeInTheDocument();
     expect(screen.queryByText('项目背景：访谈同学并整理求职痛点。')).not.toBeInTheDocument();
     expect(screen.queryByText('我的目标：让输入流程更清晰。')).not.toBeInTheDocument();
@@ -704,7 +696,7 @@ describe('PageU app shell', () => {
     expect(screen.queryByRole('radio', { name: '科技未来' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: '生成我的个人网站' })).toBeInTheDocument();
 
-    for (const template of ['Neo', 'Pure', 'Flow', 'Grid', 'Canvas', 'Glass']) {
+    for (const template of ['Resume', 'Developer', 'Case', 'Cinematic']) {
       expect(screen.getByRole('radio', { name: template })).toBeInTheDocument();
     }
   });
@@ -732,9 +724,9 @@ describe('PageU app shell', () => {
 
     expect(screen.queryByRole('group', { name: '经历2' })).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole('radio', { name: 'Glass' }));
-    expect(screen.getByRole('radio', { name: 'Glass' })).toBeChecked();
-    expect(screen.getByRole('radio', { name: 'Neo' })).not.toBeChecked();
+    await user.click(screen.getByRole('radio', { name: 'Cinematic' }));
+    expect(screen.getByRole('radio', { name: 'Cinematic' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: 'Resume' })).not.toBeChecked();
   });
 
   it('stores uploaded avatar and project cover previews in createDraft', async () => {
@@ -843,7 +835,7 @@ describe('PageU app shell', () => {
 
     await user.type(screen.getByLabelText('姓名'), '林小雨');
     await user.type(screen.getByLabelText('岗位 JD'), '前端实习生，负责 React 页面开发。');
-    await user.click(screen.getByRole('radio', { name: 'Flow' }));
+    await user.click(screen.getByRole('radio', { name: 'Developer' }));
 
     await user.click(screen.getByRole('button', { name: '生成我的个人网站' }));
     expect(await screen.findByRole('heading', { level: 1, name: '分析结果' })).toBeInTheDocument();
@@ -853,7 +845,7 @@ describe('PageU app shell', () => {
 
     expect(screen.getByLabelText('姓名')).toHaveValue('林小雨');
     expect(screen.getByLabelText('岗位 JD')).toHaveValue('前端实习生，负责 React 页面开发。');
-    expect(screen.getByRole('radio', { name: 'Flow' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: 'Developer' })).toBeChecked();
   });
 
   it('opens, answers and closes the Xiaou assistant chat', async () => {
@@ -1179,7 +1171,7 @@ describe('PageU app shell', () => {
     const createDraft = createInitialDraft();
     createDraft.basicInfo.name = '林小雨';
     createDraft.jobInfo.jd = '产品设计实习生，负责需求分析和体验优化。';
-    createDraft.template = 'glass';
+    createDraft.template = 'cinematic';
     const siteDraft = generateSiteDraft(createDraft);
     localStorage.setItem(SITE_DRAFT_STORAGE_KEY, JSON.stringify(siteDraft));
 
@@ -1189,7 +1181,7 @@ describe('PageU app shell', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByRole('main')).toHaveAttribute('data-template', 'glass');
+    expect(screen.getByRole('main')).toHaveAttribute('data-template', 'cinematic');
     expect(screen.getByRole('main')).toHaveClass('portfolio-site-mode');
     expect(screen.getByRole('main')).not.toHaveClass('portfolio-preview-mode');
     expect(screen.getByRole('link', { name: '林小雨' })).toHaveAttribute('href', '#top');
@@ -1282,15 +1274,13 @@ describe('PageU app shell', () => {
     );
 
     const hero = screen.getByRole('region', { name: 'Portfolio hero' });
-    expect(within(hero).queryByRole('heading', { level: 1, name: '陈一诺' })).not.toBeInTheDocument();
-    expect(within(hero).queryByText('AI 产品经理实习生')).not.toBeInTheDocument();
+    expect(within(hero).getByRole('heading', { level: 1, name: '陈一诺' })).toBeInTheDocument();
     expect(within(hero).getByText('我关注 AI 产品、用户洞察与商业创新，希望把技术理解转化为真实产品价值。')).toBeInTheDocument();
     expect(within(hero).getByRole('img', { name: '陈一诺 的头像' })).toHaveAttribute('src', 'data:image/png;base64,latest-avatar');
     expect(within(hero).queryByText('南山大学')).not.toBeInTheDocument();
     expect(within(hero).queryByText('精选项目')).not.toBeInTheDocument();
     expect(within(hero).queryByText('AI 简历优化项目')).not.toBeInTheDocument();
     expect(within(hero).queryByText('chen@example.com')).not.toBeInTheDocument();
-    expect(within(hero).queryByText('方向')).not.toBeInTheDocument();
   });
 
   it('renders the generated contact section with only phone and email', async () => {
@@ -1320,15 +1310,11 @@ describe('PageU app shell', () => {
     const contactSection = screen.getByRole('region', { name: 'Contact' });
     expect(within(contactSection).getByText('chen@example.com')).toBeInTheDocument();
     expect(within(contactSection).getByText('13800001111')).toBeInTheDocument();
-    expect(within(contactSection).getByRole('button', { name: '复制邮箱' })).toBeInTheDocument();
-    expect(within(contactSection).getByRole('button', { name: '复制手机号' })).toBeInTheDocument();
+    expect(within(contactSection).getByRole('link', { name: /邮箱/ })).toBeInTheDocument();
+    expect(within(contactSection).getByRole('link', { name: /手机号/ })).toBeInTheDocument();
     expect(within(contactSection).queryByText('作品链接')).not.toBeInTheDocument();
     expect(within(contactSection).queryByText('腾讯 PCG 校园 AI 产品创意大赛')).not.toBeInTheDocument();
     expect(within(contactSection).queryByRole('link', { name: 'AI 简历优化项目' })).not.toBeInTheDocument();
-
-    await user.click(within(contactSection).getByRole('button', { name: '复制邮箱' }));
-    expect(screen.getByText('复制成功')).toBeInTheDocument();
-    await waitFor(() => expect(screen.queryByText('复制成功')).not.toBeInTheDocument(), { timeout: 1500 });
   });
 
   it('opens a project detail page from the generated portfolio and returns to projects', async () => {
@@ -1429,9 +1415,9 @@ describe('PageU app shell', () => {
 
   it('switches generated site layout class when the selected template changes', () => {
     const createDraft = createInitialDraft();
-    const gridDraft = generateSiteDraft(createDraft);
-    gridDraft.template = 'grid';
-    localStorage.setItem(SITE_DRAFT_STORAGE_KEY, JSON.stringify(gridDraft));
+    const caseDraft = generateSiteDraft(createDraft);
+    caseDraft.template = 'case';
+    localStorage.setItem(SITE_DRAFT_STORAGE_KEY, JSON.stringify(caseDraft));
 
     const { unmount } = render(
       <MemoryRouter initialEntries={['/site/demo']}>
@@ -1439,12 +1425,12 @@ describe('PageU app shell', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByRole('main')).toHaveClass('template-grid-site');
+    expect(screen.getByRole('main')).toHaveClass('template-case-site');
     unmount();
 
-    const flowDraft = generateSiteDraft(createDraft);
-    flowDraft.template = 'flow';
-    localStorage.setItem(SITE_DRAFT_STORAGE_KEY, JSON.stringify(flowDraft));
+    const devDraft = generateSiteDraft(createDraft);
+    devDraft.template = 'developer';
+    localStorage.setItem(SITE_DRAFT_STORAGE_KEY, JSON.stringify(devDraft));
 
     render(
       <MemoryRouter initialEntries={['/site/demo']}>
@@ -1452,7 +1438,7 @@ describe('PageU app shell', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByRole('main')).toHaveClass('template-flow-site');
+    expect(screen.getByRole('main')).toHaveClass('template-developer-site');
   });
 
   it('publishes the generated site from the floating action and shows a share link with qr code', async () => {

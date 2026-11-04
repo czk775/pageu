@@ -139,7 +139,7 @@ export const normalizeSiteDraft = (siteDraft) => {
       textColor: '#12384c',
       ...siteDraft.theme,
     },
-    template: siteDraft.template || 'neo',
+    template: siteDraft.template || 'resume',
     stylePreference: siteDraft.stylePreference || '',
     meta: {
       version: 1,

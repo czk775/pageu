@@ -62,7 +62,7 @@ export const createInitialDraft = () => ({
     },
   ],
   stylePreference: '',
-  template: 'neo',
+  template: 'resume',
   meta: {
     version: 1,
     updatedAt: null,

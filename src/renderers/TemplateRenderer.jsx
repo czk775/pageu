@@ -1,23 +1,19 @@
 import { motion } from 'framer-motion';
 import { templates } from '../data/templates';
 import { normalizeSiteDraft } from '../types/siteDraft';
-import { CanvasTemplate } from './templates/CanvasTemplate';
-import { FlowTemplate } from './templates/FlowTemplate';
-import { GlassTemplate } from './templates/GlassTemplate';
-import { GridTemplate } from './templates/GridTemplate';
-import { NeoTemplate } from './templates/NeoTemplate';
-import { PureTemplate } from './templates/PureTemplate';
+import { ResumeTemplate } from './templates/ResumeTemplate';
+import { DeveloperTemplate } from './templates/DeveloperTemplate';
+import { CaseTemplate } from './templates/CaseTemplate';
+import { CinematicTemplate } from './templates/CinematicTemplate';
 import { PortfolioMotionProvider, usePrefersReducedMotion } from './shared/PortfolioMotionContext';
 
 const templateIds = new Set(templates.map((template) => template.id));
 
 const templateMap = {
-  neo: NeoTemplate,
-  pure: PureTemplate,
-  flow: FlowTemplate,
-  grid: GridTemplate,
-  canvas: CanvasTemplate,
-  glass: GlassTemplate,
+  resume: ResumeTemplate,
+  developer: DeveloperTemplate,
+  case: CaseTemplate,
+  cinematic: CinematicTemplate,
 };
 
 const animationFor = (mode, previewMode) => {
@@ -36,31 +32,11 @@ export function TemplateRenderer({
   className = '',
 }) {
   const normalizedDraft = normalizeSiteDraft(siteDraft);
-  const template = templateIds.has(normalizedDraft.template) ? normalizedDraft.template : 'neo';
-  const Template = templateMap[template] || NeoTemplate;
+  const template = templateIds.has(normalizedDraft.template) ? normalizedDraft.template : 'resume';
+  const Template = templateMap[template] || ResumeTemplate;
   const prefersReducedMotion = usePrefersReducedMotion();
   const initial = prefersReducedMotion ? false : animationFor(mode, previewMode);
   const isPreview = mode === 'preview';
-  const handlePointerMove = (event) => {
-    if (isPreview || prefersReducedMotion) {
-      return;
-    }
-
-    const rect = event.currentTarget.getBoundingClientRect();
-    const x = ((event.clientX - rect.left) / Math.max(rect.width, 1) - 0.5) * 28;
-    const y = ((event.clientY - rect.top) / Math.max(rect.height, 1) - 0.5) * 20;
-    event.currentTarget.style.setProperty('--pointer-shift-x', `${x.toFixed(1)}px`);
-    event.currentTarget.style.setProperty('--pointer-shift-y', `${y.toFixed(1)}px`);
-  };
-
-  const handlePointerLeave = (event) => {
-    if (isPreview) {
-      return;
-    }
-
-    event.currentTarget.style.setProperty('--pointer-shift-x', '0px');
-    event.currentTarget.style.setProperty('--pointer-shift-y', '0px');
-  };
 
   return (
     <Surface
@@ -79,15 +55,6 @@ export function TemplateRenderer({
       data-render-mode={mode}
       data-reduced-motion={prefersReducedMotion ? 'true' : 'false'}
       data-template={template}
-      onPointerLeave={handlePointerLeave}
-      onPointerMove={handlePointerMove}
-      style={{
-        '--generated-primary': normalizedDraft.theme.primaryColor,
-        '--generated-bg': normalizedDraft.theme.background,
-        '--generated-text': normalizedDraft.theme.textColor,
-        '--pointer-shift-x': '0px',
-        '--pointer-shift-y': '0px',
-      }}
     >
       <PortfolioMotionProvider mode={mode} reducedMotion={prefersReducedMotion}>
         <motion.div

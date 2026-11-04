@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Copy, Download, Rocket } from 'lucide-react';
 import QRCode from 'qrcode';
 import { generateSiteDraft } from '../lib/draftGenerator';
@@ -9,14 +9,30 @@ import { loadPublishedSiteDraft, publishSiteDraft } from '../services/publish/si
 import { useCreateDraft } from '../state/CreateDraftContext';
 import { createAnalysisResult } from '../types/analysisResult';
 import { normalizeSiteDraft } from '../types/siteDraft';
+import { createDemoDraft } from '../data/demoDraft';
 import { StatusToast } from '../components/StatusToast';
+
+const DEMO_TEMPLATES = ['resume', 'developer', 'case', 'cinematic'];
+
+const isEmptyDraft = (draft) => {
+  const name = draft?.basicInfo?.name?.trim();
+  const jd = draft?.jobInfo?.jd?.trim();
+  const experiences = draft?.experiences?.filter((experience) => experience.title?.trim() || experience.description?.trim());
+
+  return !name && !jd && !experiences?.length;
+};
 
 export function GeneratedSitePage() {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { createDraft, resetDraft } = useCreateDraft();
-  const analysisResult = useMemo(() => createAnalysisResult(createDraft), [createDraft]);
-  const generatedDraft = useMemo(() => generateSiteDraft(createDraft, analysisResult), [analysisResult, createDraft]);
+  const sourceDraft = useMemo(() => {
+    const isDemo = !id || id === 'demo';
+    return isDemo && isEmptyDraft(createDraft) ? createDemoDraft() : createDraft;
+  }, [createDraft, id]);
+  const analysisResult = useMemo(() => createAnalysisResult(sourceDraft), [sourceDraft]);
+  const generatedDraft = useMemo(() => generateSiteDraft(sourceDraft, analysisResult), [analysisResult, sourceDraft]);
   const fallbackSiteDraft = useMemo(() => loadSiteDraft(generatedDraft), [generatedDraft]);
   const [siteDraft, setSiteDraft] = useState(fallbackSiteDraft);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -26,8 +42,16 @@ export function GeneratedSitePage() {
   const isDemoSite = !id || id === 'demo';
 
   useEffect(() => {
+    const templateParam = searchParams.get('template');
+    const previewTemplate = DEMO_TEMPLATES.includes(templateParam) ? templateParam : '';
+
+    if (previewTemplate && isDemoSite) {
+      setSiteDraft((draft) => ({ ...draft, template: previewTemplate }));
+      return;
+    }
+
     setSiteDraft(fallbackSiteDraft);
-  }, [fallbackSiteDraft]);
+  }, [fallbackSiteDraft, isDemoSite, searchParams]);
 
   useEffect(() => {
     if (isDemoSite) {

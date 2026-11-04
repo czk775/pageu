@@ -1,0 +1,152 @@
+/* ============================================================
+   Phase 10 — 全新渲染层（Tailwind 内联为主）
+   此文件只包含新模板需要的少量自定义样式（导航、外壳缩放、动效降级），
+   在 main.jsx 中于 styles.css 之后引入，覆盖旧 portfolio-* 残留规则。
+   ============================================================ */
+
+/* ---------- 导航（覆盖旧 .portfolio-nav 的绝对定位/胶囊样式） ---------- */
+.portfolio-nav {
+  position: relative;
+  top: auto;
+  left: auto;
+  z-index: 10;
+  display: flex;
+  width: 100%;
+  max-width: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 0;
+  border: none;
+  border-bottom: 1px solid color-mix(in srgb, currentColor, transparent 88%);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+  backdrop-filter: none;
+}
+
+.portfolio-nav a {
+  color: inherit;
+  text-decoration: none;
+  opacity: 0.72;
+  transition: opacity 160ms ease;
+}
+
+.portfolio-nav a:hover,
+.portfolio-nav a:focus-visible {
+  opacity: 1;
+}
+
+.portfolio-nav a.active,
+.portfolio-nav a[aria-current="page"] {
+  opacity: 1;
+  font-weight: 700;
+  color: inherit;
+  background: transparent;
+}
+
+.portfolio-nav a.active::after,
+.portfolio-nav a[aria-current="page"]::after {
+  display: none;
+}
+
+.portfolio-nav-logo {
+  flex: 0 1 auto;
+  max-width: 45%;
+  overflow: hidden;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.portfolio-nav-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+
+.portfolio-easter-egg {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 180px;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 13px;
+  background: color-mix(in srgb, currentColor, transparent 90%);
+}
+
+/* ---------- 外壳：site / preview 模式缩放（编辑器与发布页依赖） ---------- */
+.portfolio-site {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.portfolio-site-mode {
+  min-height: 100vh;
+}
+
+.portfolio-motion-layer,
+.portfolio-site-canvas,
+.portfolio-preview-scale {
+  width: 100%;
+}
+
+.portfolio-site-mode .portfolio-site-canvas {
+  min-height: 100vh;
+}
+
+.portfolio-preview-mode {
+  min-height: 620px;
+  overflow: hidden;
+  border-radius: 26px;
+}
+
+.portfolio-preview-scale {
+  transform-origin: top center;
+}
+
+.editor-render-preview.portfolio-preview-mode,
+.publish-render-preview.portfolio-preview-mode {
+  box-shadow: inset 0 0 0 1px rgba(92, 184, 205, 0.16);
+}
+
+.editor-render-preview .portfolio-preview-scale,
+.publish-render-preview .portfolio-preview-scale {
+  transform: scale(0.72);
+  width: 138%;
+  min-height: 1180px;
+  margin-left: -19%;
+}
+
+.editor-render-preview.generated-site-mobile .portfolio-preview-scale,
+.publish-render-preview.generated-site-mobile .portfolio-preview-scale {
+  transform: scale(0.86);
+  width: 420px;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+/* ---------- 动效降级 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .portfolio-site *,
+  .portfolio-site *::before,
+  .portfolio-site *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---------- 移动端 ---------- */
+@media (max-width: 900px) {
+  .portfolio-nav {
+    padding: 14px 0;
+  }
+
+  .portfolio-nav-links {
+    gap: 12px;
+  }
+}

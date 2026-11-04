@@ -12,7 +12,12 @@ const cleanPreviewUrl = (value = '') => {
   }
 
   const url = value.trim();
-  return /^(data:image\/|blob:|https?:\/\/)/i.test(url) ? url : '';
+  if (!url) {
+    return '';
+  }
+
+  // 接受 data URL / blob / 完整 URL，以及站内相对路径（以 / 开头，避免脏字符）。
+  return /^(data:image\/|blob:|https?:\/\/|\/[^\\<>"\s]*$)/i.test(url) ? url : '';
 };
 
 const splitListText = (value = '') =>
@@ -277,17 +282,15 @@ const buildAbout = (createDraft) => {
   };
 };
 
-const buildTheme = (template = 'neo') => {
+const buildTheme = (template = 'resume') => {
   const themeMap = {
-    neo: { primaryColor: '#22b9e9', background: '#eefbff', textColor: '#12384c' },
-    pure: { primaryColor: '#111111', background: '#fbfbf7', textColor: '#151515' },
-    flow: { primaryColor: '#8d7cf6', background: '#fff8f4', textColor: '#2f2748' },
-    grid: { primaryColor: '#2563eb', background: '#f8fafc', textColor: '#0f172a' },
-    canvas: { primaryColor: '#ff7a59', background: '#fff4df', textColor: '#25150f' },
-    glass: { primaryColor: '#20c7d8', background: '#f1fdff', textColor: '#12384c' },
+    resume: { primaryColor: '#0f172a', background: '#faf8f4', textColor: '#1c1917' },
+    developer: { primaryColor: '#2563eb', background: '#f2f7ff', textColor: '#1e293b' },
+    case: { primaryColor: '#4f46e5', background: '#f8fafc', textColor: '#0f172a' },
+    cinematic: { primaryColor: '#ff6a3d', background: '#0b0b0f', textColor: '#f8f4ec' },
   };
 
-  return themeMap[template] || themeMap.neo;
+  return themeMap[template] || themeMap.resume;
 };
 
 export const generateSiteDraft = (createDraft, analysisResult = createAnalysisResult(createDraft)) => {
@@ -298,7 +301,7 @@ export const generateSiteDraft = (createDraft, analysisResult = createAnalysisRe
   const selfIntro = clean(createDraft?.basicInfo?.selfIntro) || personalTagline;
   const targetRole = extractTargetRole(createDraft?.jobInfo?.jd);
   const motivation = clean(createDraft?.jobInfo?.motivation);
-  const template = createDraft?.template || 'neo';
+  const template = createDraft?.template || 'resume';
   const skills = unique([
     ...splitListText(createDraft?.skillsInfo?.keywords),
     ...(analysisResult?.abilityFocus?.length ? analysisResult.abilityFocus : fallbackSkills),

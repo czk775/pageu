@@ -678,9 +678,7 @@
 }
 
 .template-flow-site {
-  background:
-    linear-gradient(120deg, rgba(255, 234, 246, 0.96), rgba(239, 246, 255, 0.98)),
-    #fff8fb;
+  /* Phase 9 覆盖：去 AI 味装饰球，留给 9.3 段统一设 background: var(--generated-bg) */
 }
 
 .template-flow-site .portfolio-full-hero {
@@ -722,10 +720,7 @@
 }
 
 .template-canvas-site {
-  background:
-    radial-gradient(circle at 18% 14%, rgba(255, 122, 89, 0.2), transparent 26%),
-    radial-gradient(circle at 88% 30%, rgba(25, 211, 184, 0.22), transparent 24%),
-    #fff4df;
+  /* Phase 9 覆盖：去 AI 味装饰球，留给 9.5 段统一设 background: var(--generated-bg) */
 }
 
 .template-canvas-site .portfolio-full-hero {
@@ -1354,17 +1349,11 @@ html {
 }
 
 .template-canvas-site .portfolio-shell {
-  background:
-    radial-gradient(circle at 14% 18%, rgba(255, 176, 116, 0.38), transparent 28%),
-    radial-gradient(circle at 86% 16%, rgba(68, 211, 188, 0.28), transparent 24%),
-    rgba(255, 248, 230, 0.82);
+  /* Phase 9 覆盖：去 AI 味装饰球 */
 }
 
 .template-glass-site .portfolio-shell {
-  background:
-    radial-gradient(circle at 82% 14%, rgba(108, 225, 220, 0.35), transparent 30%),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.54), rgba(235, 253, 255, 0.66));
-  box-shadow: 0 34px 120px rgba(36, 183, 211, 0.18);
+  /* Phase 9 覆盖：去 AI 味装饰球 */
 }
 
 @media (max-width: 900px) {
@@ -1813,10 +1802,7 @@ html {
 }
 
 .template-glass-site {
-  background:
-    radial-gradient(circle at 18% 8%, rgba(97, 230, 181, 0.4), transparent 26%),
-    radial-gradient(circle at 82% 18%, rgba(32, 199, 216, 0.32), transparent 30%),
-    linear-gradient(145deg, #f5feff, #ecfbff 52%, #f7fffb);
+  /* Phase 9 覆盖：去 AI 味装饰球，留给 9.6 段统一设 background: var(--generated-bg) */
 }
 
 .template-glass-site .portfolio-hero,
@@ -5198,5 +5184,704 @@ a {
 
   .portfolio-hero-self-intro {
     font-size: clamp(17px, 4.8vw, 22px);
+  }
+}
+
+/* ============================================================
+   Phase 9 — Skill 风格视觉重做（保持 DOM 结构不变，纯视觉覆盖）
+   设计基准：personal-homepage-skill 规范
+   - 中文排版优先（CJK 字体栈）
+   - 禁 AI 味：无发光球、无廉价紫色渐变、无千篇一律卡片
+   - 每模板独立布局语法与视觉记忆点
+   ============================================================ */
+
+/* ---------- 9.0 全局字体与基础 ---------- */
+.portfolio-site {
+  font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", "Source Han Sans SC", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* 9.0a 全局去掉所有发光球（防 AI 味） */
+.portfolio-site-mode.portfolio-motion-ready::before,
+.portfolio-full-hero::before,
+.portfolio-full-hero::after,
+.portfolio-hero-horizontal-tab::before,
+.portfolio-hero-horizontal-tab::after {
+  display: none !important;
+}
+
+/* 9.0b 全局背景：用极淡网格替代发光球，避免视觉空洞 */
+.portfolio-site-mode.portfolio-motion-ready {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--generated-text), transparent 97%) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--generated-text), transparent 97%) 1px, transparent 1px);
+  background-size: 64px 64px;
+  background-position: -1px -1px;
+}
+
+/* 9.0c reveal 元素改为 transform-only 动画（opacity 默认 1，确保 headless 截图也能看到） */
+.portfolio-site .portfolio-reveal-line,
+.portfolio-site .portfolio-reveal-visual {
+  opacity: 1 !important;
+  transform: translateY(0);
+  animation: portfolioRevealUp 760ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes portfolioRevealUp {
+  from { transform: translateY(22px); }
+  to { transform: translateY(0); }
+}
+
+@keyframes portfolioRevealVisual {
+  from { transform: translateY(18px) scale(0.985); }
+  to { transform: translateY(0) scale(1); }
+}
+
+/* 9.0d horizontal-tab 自身背景去掉 radial-gradient 装饰（已被 ::before 替代，但保留干净底色） */
+.portfolio-hero-horizontal-tab {
+  background: color-mix(in srgb, var(--generated-bg), #ffffff 50%) !important;
+  backdrop-filter: none;
+}
+
+.portfolio-site h1,
+.portfolio-site h2,
+.portfolio-site h3 {
+  font-family: inherit;
+  letter-spacing: -0.01em;
+}
+
+/* 区块标题统一：小眉标 + 大标题 */
+.portfolio-section-eyebrow {
+  margin-bottom: 12px;
+  color: var(--generated-primary);
+  font-family: ui-monospace, "SF Mono", "JetBrains Mono", Consolas, monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.portfolio-section-heading {
+  margin-bottom: 34px;
+  border-bottom: 1px solid color-mix(in srgb, var(--generated-text), transparent 86%);
+  padding-bottom: 18px;
+}
+
+.portfolio-section-heading h2 {
+  font-size: clamp(30px, 4.4vw, 46px);
+  font-weight: 800;
+  line-height: 1.12;
+}
+
+/* 区块容器统一留白 */
+.portfolio-shell {
+  gap: clamp(84px, 10vw, 148px);
+}
+
+/* 导航：胶囊 → 顶部细线导航 */
+.portfolio-nav {
+  border: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--generated-text), transparent 88%);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--generated-bg), transparent 12%);
+  box-shadow: none;
+  backdrop-filter: blur(14px);
+}
+
+.portfolio-nav a {
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.portfolio-nav a.active,
+.portfolio-nav a[aria-current="page"] {
+  color: var(--generated-bg);
+  background: var(--generated-primary);
+}
+
+.portfolio-nav a.active::after,
+.portfolio-nav a[aria-current="page"]::after {
+  display: none;
+}
+
+.portfolio-nav-logo {
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+/* 按钮：方形圆角、实色、克制阴影 */
+.portfolio-primary-cta,
+.portfolio-secondary-cta,
+.portfolio-link-button,
+.portfolio-contact-actions a {
+  min-height: 46px;
+  border-radius: 12px;
+  padding: 12px 22px;
+  font-weight: 700;
+}
+
+.portfolio-primary-cta,
+.portfolio-link-button {
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--generated-primary), transparent 74%);
+}
+
+.portfolio-secondary-cta,
+.portfolio-contact-actions a {
+  border: 1px solid color-mix(in srgb, var(--generated-text), transparent 78%);
+  background: color-mix(in srgb, var(--generated-bg), var(--generated-text) 3%);
+}
+
+/* 卡片：统一柔和大圆角 + 极浅表面 + 细边框，去掉重阴影 */
+.portfolio-section-frame,
+.portfolio-project-card,
+.portfolio-work-card,
+.portfolio-contact-panel,
+.portfolio-highlights-strip article {
+  border: 1px solid color-mix(in srgb, var(--generated-text), transparent 90%);
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--generated-bg), var(--generated-text) 2.5%);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--generated-text), transparent 96%);
+}
+
+/* 项目卡 */
+.portfolio-featured-project {
+  margin-bottom: 28px;
+}
+
+.portfolio-project-card {
+  overflow: hidden;
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+}
+
+.portfolio-project-card:hover {
+  border-color: color-mix(in srgb, var(--generated-primary), transparent 70%);
+  box-shadow: 0 14px 40px color-mix(in srgb, var(--generated-primary), transparent 88%);
+}
+
+.portfolio-project-cover {
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: 0;
+}
+
+.portfolio-project-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 320ms ease;
+}
+
+.portfolio-project-card:hover .portfolio-project-cover img {
+  transform: scale(1.04);
+}
+
+.portfolio-project-cover-placeholder {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  color: var(--generated-primary);
+  font-size: 44px;
+  font-weight: 800;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--generated-primary), transparent 88%),
+    color-mix(in srgb, var(--generated-primary), transparent 96%)
+  );
+}
+
+.portfolio-project-card-body {
+  padding: 24px 26px 28px;
+}
+
+.portfolio-project-meta {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+
+.portfolio-project-meta span {
+  color: color-mix(in srgb, var(--generated-text), transparent 42%);
+}
+
+.portfolio-project-meta strong {
+  color: var(--generated-primary);
+  font-weight: 700;
+}
+
+.portfolio-project-card h3 {
+  margin: 0 0 10px;
+  font-size: clamp(22px, 2.6vw, 30px);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.portfolio-project-card p {
+  margin: 0 0 18px;
+  color: color-mix(in srgb, var(--generated-text), transparent 24%);
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+.portfolio-tags {
+  margin-top: 0;
+  gap: 8px;
+}
+
+.portfolio-tags span,
+.portfolio-pill-cloud span,
+.portfolio-certificate-row span {
+  min-height: 30px;
+  border: 1px solid color-mix(in srgb, var(--generated-primary), transparent 76%);
+  border-radius: 999px;
+  padding: 5px 12px;
+  color: color-mix(in srgb, var(--generated-primary), var(--generated-text) 30%);
+  font-size: 12.5px;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--generated-primary), transparent 94%);
+}
+
+.portfolio-project-hover-link {
+  margin-top: 4px;
+}
+
+/* 高光条 */
+.portfolio-highlights-strip {
+  gap: 18px;
+  margin-top: 0;
+}
+
+.portfolio-highlights-strip article {
+  padding: 26px 28px;
+}
+
+.portfolio-highlights-strip strong {
+  margin-top: 8px;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+/* 简历摘要 */
+.portfolio-resume-snapshot .resume-snapshot-grid {
+  gap: 18px;
+}
+
+.portfolio-resume-snapshot article {
+  border: 1px solid color-mix(in srgb, var(--generated-text), transparent 90%);
+  border-radius: 18px;
+  padding: 24px 26px;
+  background: color-mix(in srgb, var(--generated-bg), var(--generated-text) 2%);
+}
+
+.portfolio-resume-snapshot article > span {
+  display: block;
+  margin-bottom: 10px;
+  color: color-mix(in srgb, var(--generated-text), transparent 46%);
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.portfolio-resume-snapshot article > strong {
+  font-size: 19px;
+  font-weight: 800;
+}
+
+/* 关于 */
+.portfolio-about-section {
+  max-width: 760px;
+  margin-inline: auto;
+  text-align: left;
+}
+
+.portfolio-about-copy p {
+  margin: 0 0 14px;
+  font-size: clamp(17px, 2.2vw, 21px);
+  font-weight: 500;
+  line-height: 1.9;
+  color: var(--generated-text);
+}
+
+/* 联系 */
+.portfolio-contact-panel {
+  padding: clamp(28px, 4vw, 44px);
+}
+
+.portfolio-contact-methods {
+  gap: 14px;
+}
+
+.portfolio-contact-method {
+  border: 1px solid color-mix(in srgb, var(--generated-text), transparent 90%);
+  border-radius: 16px;
+  padding: 20px 22px;
+  background: color-mix(in srgb, var(--generated-bg), var(--generated-text) 2%);
+}
+
+.generated-footer {
+  color: color-mix(in srgb, var(--generated-text), transparent 44%);
+  font-size: 13px;
+}
+
+/* ---------- 9.1 Neo — Clean Developer Homepage ---------- */
+.template-neo-site,
+.template-neo-site.portfolio-site-mode,
+.template-neo-site.portfolio-site-mode.portfolio-motion-ready {
+  background: var(--generated-bg) !important;
+  background-image: none !important;
+}
+
+.template-neo-site .portfolio-hero-horizontal-tab {
+  border: 1px solid color-mix(in srgb, var(--generated-primary), transparent 82%);
+  border-radius: 28px;
+  background: color-mix(in srgb, var(--generated-bg), #ffffff 46%);
+  box-shadow: 0 24px 70px color-mix(in srgb, var(--generated-primary), transparent 90%);
+}
+
+.template-neo-site .portfolio-hero-tab-photo .portfolio-avatar-frame {
+  border-radius: 20px;
+}
+
+.template-neo-site .portfolio-hero-intro-card {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.template-neo-site .portfolio-projects-masonry {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+
+/* ---------- 9.2 Pure — Minimal Premium Resume ---------- */
+.template-pure-site,
+.template-pure-site.portfolio-site-mode,
+.template-pure-site.portfolio-site-mode.portfolio-motion-ready {
+  background: var(--generated-bg) !important;
+  background-image: none !important;
+}
+
+.template-pure-site .portfolio-site {
+  font-family: "Noto Serif SC", "Songti SC", "SimSun", serif;
+}
+
+.template-pure-site h1,
+.template-pure-site h2 {
+  font-family: "Noto Serif SC", "Songti SC", "SimSun", serif;
+  font-weight: 700;
+}
+
+.template-pure-site .portfolio-section-eyebrow {
+  font-family: "Noto Serif SC", "Songti SC", serif;
+  letter-spacing: 0.22em;
+}
+
+.template-pure-site .portfolio-hero-horizontal-tab {
+  border: 1px solid color-mix(in srgb, var(--generated-text), transparent 88%);
+  border-radius: 0;
+  background: var(--generated-bg);
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.template-pure-site .portfolio-hero-tab-photo .portfolio-avatar-frame {
+  border-radius: 4px;
+}
+
+.template-pure-site .portfolio-hero-intro-card {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.template-pure-site .portfolio-hero-self-intro {
+  font-size: clamp(19px, 1.7vw, 26px);
+  font-weight: 500;
+  line-height: 2;
+}
+
+.template-pure-site .portfolio-section-frame,
+.template-pure-site .portfolio-project-card,
+.template-pure-site .portfolio-work-card,
+.template-pure-site .portfolio-contact-panel,
+.template-pure-site .portfolio-highlights-strip article,
+.template-pure-site .portfolio-resume-snapshot article {
+  border-radius: 0;
+  border-color: color-mix(in srgb, var(--generated-text), transparent 82%);
+  background: transparent;
+  box-shadow: none;
+}
+
+.template-pure-site .portfolio-projects-masonry {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  border-top: 1px solid color-mix(in srgb, var(--generated-text), transparent 88%);
+}
+
+.template-pure-site .portfolio-project-card {
+  display: grid;
+  grid-template-columns: 0.42fr minmax(0, 1fr);
+  border-bottom: 1px solid color-mix(in srgb, var(--generated-text), transparent 88%);
+  border-radius: 0;
+}
+
+.template-pure-site .portfolio-project-cover {
+  aspect-ratio: auto;
+  min-height: 220px;
+}
+
+/* ---------- 9.3 Flow — Magazine Portfolio ---------- */
+.template-flow-site,
+.template-flow-site.portfolio-site-mode,
+.template-flow-site.portfolio-site-mode.portfolio-motion-ready {
+  background: var(--generated-bg) !important;
+  background-image: none !important;
+}
+
+.template-flow-site .portfolio-site {
+  font-family: "Noto Serif SC", "Songti SC", serif;
+}
+
+.template-flow-site .portfolio-full-hero {
+  border-radius: 0 0 40px 40px;
+}
+
+.template-flow-site .portfolio-hero-horizontal-tab {
+  border: none;
+  border-radius: 24px;
+  background: color-mix(in srgb, var(--generated-bg), #ffffff 60%);
+  box-shadow: 0 30px 80px color-mix(in srgb, var(--generated-text), transparent 92%);
+}
+
+.template-flow-site .portfolio-section-eyebrow {
+  font-family: "Noto Serif SC", "Songti SC", serif;
+  letter-spacing: 0.2em;
+}
+
+.template-flow-site .portfolio-projects-masonry {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 34px;
+}
+
+.template-flow-site .portfolio-project-card {
+  display: grid;
+  grid-template-columns: 0.9fr minmax(0, 1.1fr);
+  border-radius: 24px;
+}
+
+.template-flow-site .portfolio-project-card-body {
+  padding: 34px 38px;
+}
+
+.template-flow-site .portfolio-project-card h3 {
+  font-family: "Noto Serif SC", "Songti SC", serif;
+  font-size: clamp(26px, 3vw, 38px);
+}
+
+/* ---------- 9.4 Grid — Case Study Portfolio ---------- */
+.template-grid-site,
+.template-grid-site.portfolio-site-mode,
+.template-grid-site.portfolio-site-mode.portfolio-motion-ready {
+  background: var(--generated-bg) !important;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--generated-text), transparent 94%) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--generated-text), transparent 94%) 1px, transparent 1px) !important;
+  background-size: 44px 44px !important;
+}
+
+.template-grid-site .portfolio-site {
+  font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+}
+
+.template-grid-site .portfolio-section-eyebrow {
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+}
+
+.template-grid-site .portfolio-hero-horizontal-tab {
+  border: 1px solid color-mix(in srgb, var(--generated-text), transparent 84%);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--generated-bg), #ffffff 70%);
+  box-shadow: 0 2px 0 color-mix(in srgb, var(--generated-text), transparent 90%);
+}
+
+.template-grid-site .portfolio-hero-tab-photo .portfolio-avatar-frame {
+  border-radius: 10px;
+}
+
+.template-grid-site .portfolio-project-card,
+.template-grid-site .portfolio-work-card,
+.template-grid-site .portfolio-contact-panel,
+.template-grid-site .portfolio-highlights-strip article,
+.template-grid-site .portfolio-resume-snapshot article {
+  border-radius: 12px;
+  border-color: color-mix(in srgb, var(--generated-text), transparent 84%);
+  background: color-mix(in srgb, var(--generated-bg), #ffffff 78%);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--generated-text), transparent 88%);
+}
+
+.template-grid-site .portfolio-projects-masonry {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+/* ---------- 9.5 Canvas — Business Personal Brand ---------- */
+.template-canvas-site,
+.template-canvas-site.portfolio-site-mode,
+.template-canvas-site.portfolio-site-mode.portfolio-motion-ready {
+  background: var(--generated-bg) !important;
+  background-image: none !important;
+}
+
+.template-canvas-site .portfolio-site {
+  font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+}
+
+.template-canvas-site .portfolio-hero-horizontal-tab {
+  border: none;
+  border-radius: 26px;
+  background: color-mix(in srgb, var(--generated-bg), #ffffff 50%);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--generated-primary), transparent 86%);
+  backdrop-filter: none;
+}
+
+.template-canvas-site .portfolio-section-eyebrow {
+  font-weight: 700;
+}
+
+.template-canvas-site .portfolio-project-card {
+  border-radius: 18px;
+  border-color: color-mix(in srgb, var(--generated-primary), transparent 82%);
+}
+
+.template-canvas-site .portfolio-projects-masonry {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.template-canvas-site .portfolio-primary-cta,
+.template-canvas-site .portfolio-link-button {
+  box-shadow: 0 14px 34px color-mix(in srgb, var(--generated-primary), transparent 76%);
+}
+
+/* ---------- 9.6 Glass — Cinematic 轻量深色玻璃 ---------- */
+.template-glass-site.portfolio-site-mode.portfolio-motion-ready {
+  background: var(--generated-bg);
+  background-image: none;
+}
+
+.template-glass-site .portfolio-site {
+  font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+}
+
+.template-glass-site .portfolio-hero-horizontal-tab {
+  border: 1px solid color-mix(in srgb, var(--generated-primary), transparent 70%);
+  border-radius: 28px;
+  background: color-mix(in srgb, var(--generated-bg), transparent 10%);
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(22px);
+}
+
+.template-glass-site .portfolio-hero-tab-photo .portfolio-avatar-frame {
+  border-radius: 24px;
+}
+
+.template-glass-site .portfolio-hero-intro-card {
+  border: 1px solid color-mix(in srgb, var(--generated-primary), transparent 76%);
+  background: color-mix(in srgb, var(--generated-bg), transparent 26%);
+  backdrop-filter: blur(18px);
+}
+
+.template-glass-site .portfolio-nav {
+  border-bottom-color: color-mix(in srgb, var(--generated-primary), transparent 74%);
+}
+
+.template-glass-site .portfolio-project-card,
+.template-glass-site .portfolio-work-card,
+.template-glass-site .portfolio-contact-panel,
+.template-glass-site .portfolio-highlights-strip article,
+.template-glass-site .portfolio-resume-snapshot article {
+  border: 1px solid color-mix(in srgb, var(--generated-primary), transparent 78%);
+  background: color-mix(in srgb, var(--generated-bg), transparent 16%);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(20px);
+}
+
+.template-glass-site .portfolio-project-card-body p,
+.template-glass-site .portfolio-about-copy p {
+  color: color-mix(in srgb, var(--generated-text), transparent 18%);
+}
+
+.template-glass-site .portfolio-projects-masonry {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+
+/* ---------- 9.7 动效克制 + 可访问性 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .portfolio-site .portfolio-reveal-line,
+  .portfolio-site .portfolio-reveal-visual {
+    animation: none !important;
+  }
+
+  .portfolio-project-card:hover .portfolio-project-cover img {
+    transform: none;
+  }
+}
+
+/* ---------- 9.8 移动端覆盖 ---------- */
+@media (max-width: 900px) {
+  .portfolio-hero-horizontal-tab {
+    border-radius: 20px;
+    padding: 16px;
+  }
+
+  .portfolio-hero-tab-photo .portfolio-avatar-frame {
+    min-height: 260px;
+    border-radius: 16px;
+  }
+
+  .portfolio-hero-intro-card {
+    padding: 20px;
+    border-radius: 16px;
+  }
+
+  .template-pure-site .portfolio-project-card,
+  .template-flow-site .portfolio-project-card {
+    grid-template-columns: 1fr;
+  }
+
+  .template-pure-site .portfolio-project-cover {
+    min-height: 180px;
+  }
+
+  .template-neo-site .portfolio-projects-masonry,
+  .template-grid-site .portfolio-projects-masonry,
+  .template-canvas-site .portfolio-projects-masonry,
+  .template-glass-site .portfolio-projects-masonry {
+    grid-template-columns: 1fr;
+  }
+
+  .portfolio-section-heading {
+    margin-bottom: 24px;
+  }
+
+  .portfolio-contact-methods {
+    grid-template-columns: 1fr;
   }
 }

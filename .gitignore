@@ -1,10 +1,48 @@
+# Dependencies
 node_modules
+.pnp
+.pnp.js
+
+# Build output
 dist
+dist-ssr
+*.local
+
+# Environment / secrets
 .env
 .env.local
-*.local
+.env.*.local
+!.env.example
+
+# Logs
+*.log
 npm-debug.log*
-pnpm-debug.log*
 yarn-debug.log*
-vite-dev.*.log
-vite-pageu-*.log
+yarn-error.log*
+pnpm-debug.log*
+logs/
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+Thumbs.db
+
+# Test / coverage
+coverage
+.nyc_output
+
+# Local tooling & scratch dirs
+.workbuddy/
+.tmp-edge*/
+tmp/
+temp/
+
+# Personal media (not for public repo)
+/形象照.png
+/e2a96a48-*.png
+/曹桎康-创意-PageU-演示视频.mp4
+
+# Netlify local state
+.netlify/

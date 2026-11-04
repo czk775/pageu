@@ -1,14 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { usePortfolioMotion } from './PortfolioMotionContext';
 
-const navItems = [
+export const navItems = [
   { id: 'resume', label: '简历' },
   { id: 'featured-projects', label: '项目' },
   { id: 'contact', label: '联系我' },
 ];
 
 export function PortfolioNav({ name = 'PageU', compact = false }) {
-  const { reducedMotion } = usePortfolioMotion();
   const [activeSection, setActiveSection] = useState('');
   const [eggVisible, setEggVisible] = useState(false);
   const logoClicks = useRef(0);
@@ -63,7 +61,7 @@ export function PortfolioNav({ name = 'PageU', compact = false }) {
 
     event.preventDefault();
     target.scrollIntoView({
-      behavior: reducedMotion ? 'auto' : 'smooth',
+      behavior: 'smooth',
       block: 'start',
     });
     window.history.replaceState(null, '', `#${id}`);
