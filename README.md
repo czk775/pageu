@@ -2,7 +2,7 @@
 
 > 填一段经历，AI 读懂它，生成一个可以直接发出去的求职个人网站。
 
-**[🌐 在线体验](https://pageu-ai-career.netlify.app)** · 无需注册，全程免费
+**[🌐 在线体验](https://pageu-ai-career.netlify.app)** · **[▶ 演示视频（58 秒 · 2.5MB）](https://github.com/czk775/pageu/releases/download/v0.2.0/pageu-demo.mp4)** · 无需注册，全程免费
 
 <img src="docs/screenshots/03-site.webp" alt="PageU 生成的个人网站效果" width="100%" />
 
