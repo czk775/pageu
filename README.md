@@ -126,16 +126,6 @@ npm run build    # 生产构建
 
 ---
 
-## 七、作者
-
-**曹桎康** · 市场营销硕士在读，本科软件工程
-求职方向：AI 产品经理 / AI 行业
-
-- GitHub：[@czk775](https://github.com/czk775)
-- 项目仓库：[czk775/pageu](https://github.com/czk775/pageu)
-
----
-
 ## License
 
 [MIT](LICENSE)
