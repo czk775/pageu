@@ -10,7 +10,7 @@
   - Windows + PowerShell
   - Vite dev server：`http://127.0.0.1:5207/`
   - Mock/fallback dev server：`http://127.0.0.1:5208/`
-  - 浏览器：Codex in-app Chromium
+  - 浏览器：Chromium (headless)
 
 ## 2. 测试通过率
 
@@ -72,7 +72,7 @@
 | 桌面宽度 | 通过 | - | 1280x720 浏览器冒烟通过 |
 | 手机宽度 | 部分覆盖 | P3 | 代码有响应式与手机预览控件，未执行真实移动设备浏览器截图 |
 | 刷新恢复 | 通过 | - | localStorage 相关自动化测试覆盖 |
-| 不同浏览器 | 未执行 | P3 | 当前仅用 Codex in-app Chromium，建议部署前补 Chrome/Edge/Safari 快速冒烟 |
+| 不同浏览器 | 未执行 | P3 | 当前仅用 Chromium (headless)，建议部署前补 Chrome/Edge/Safari 快速冒烟 |
 
 ## 6. AI 测试
 
