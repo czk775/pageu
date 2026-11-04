@@ -2,20 +2,9 @@
 
 > 填一段经历，AI 读懂它，生成一个可以直接发出去的求职个人网站。
 
-**[🌐 在线体验](https://pageu-ai-career.netlify.app)** · **[▶ 观看演示视频](https://github.com/czk775/pageu/releases/download/v0.1.0/pageu-demo.mp4)** · 无需注册，全程免费
+**[🌐 在线体验](https://pageu-ai-career.netlify.app)** · 无需注册，全程免费
 
-<br />
-
-<table>
-  <tr>
-    <td width="50%"><img src="docs/phase10-previews/template-resume.png" alt="Resume 模板" /><p align="center"><b>Resume</b> · 极简简历</p></td>
-    <td width="50%"><img src="docs/phase10-previews/template-developer.png" alt="Developer 模板" /><p align="center"><b>Developer</b> · 清爽开发者</p></td>
-  </tr>
-  <tr>
-    <td width="50%"><img src="docs/phase10-previews/template-case.png" alt="Case 模板" /><p align="center"><b>Case</b> · 案例作品集</p></td>
-    <td width="50%"><img src="docs/phase10-previews/template-cinematic.png" alt="Cinematic 模板" /><p align="center"><b>Cinematic</b> · 电影感品牌</p></td>
-  </tr>
-</table>
+<img src="docs/screenshots/03-site.webp" alt="PageU 生成的个人网站效果" width="100%" />
 
 ---
 
@@ -35,31 +24,54 @@ PageU 把这三件事压成一次填空：**你只负责讲事实，AI 负责提
 
 ## 二、产品流程
 
-> 一分钟看完整个流程：[▶ 演示视频](https://github.com/czk775/pageu/releases/download/v0.1.0/pageu-demo.mp4)
+### 1. 输入 — 结构化表单，不用会写文案
 
-```
-输入经历  →  AI 分析  →  编辑预览  →  一键发布
-   ↓            ↓           ↓            ↓
- 结构化表单   亮点/标签    4 套模板      在线链接
- 头像/封面    可追问调整    实时双向      二维码
-```
+按模块填写基本信息、项目经历、技能证书。支持上传头像与项目封面，草稿自动存本地，刷新不丢。
 
-### 1. 输入
-结构化表单收集教育背景、项目/比赛经历、技能证书。支持上传头像与项目封面，所见即所得。草稿自动存本地，刷新不丢。
+<img src="docs/screenshots/02-create.webp" alt="创建页：结构化表单" width="100%" />
 
-### 2. AI 分析
-「小U」读取全部输入，输出结构化的分析结果：**核心亮点、能力标签、可优化项**。
-不满意可以追问重来——直接说「项目经历讲得太散」「突出我的数据能力」，AI 会据此重新分析。
+### 2. AI 分析 — 从「我做过什么」到「我该突出什么」
 
-### 3. 编辑
-四套视觉风格完全不同的模板，切换即换皮。左侧改字段、右侧实时预览，桌面/移动双视图切换。
+AI 助手「小U」读取全部输入，输出四组结构化结论：**岗位关键词、能力重点、推荐展示顺序、推荐强调经历**。
 
-### 4. 发布
-一键发布到线上，得到 `pageu-ai-career.netlify.app/site/{id}` 这样的可访问链接，同时生成二维码——可以直接贴进简历 PDF。
+不满意可以追问重来——直接说「项目经历讲得太散」「突出我的数据能力」，AI 据此重新分析。
+
+<img src="docs/screenshots/06-analyze.webp" alt="AI 分析结果页" width="100%" />
+
+### 3. 编辑 — 三栏实时预览
+
+左侧调模块顺序与显隐，中间实时预览，右侧改字段与配色。桌面 / 手机双视图随时切换，改完即存。
+
+<img src="docs/screenshots/07-editor.webp" alt="编辑器：模块区 / 预览 / 编辑区" width="100%" />
+
+### 4. 发布 — 一个链接 + 一张二维码
+
+一键发布到线上，得到可访问的站点链接，同时生成二维码，可以直接贴进简历 PDF。
+
+生成的项目经历还会自动展开成独立详情页——面试官点进去能看到完整的项目叙事，而不是挤在一行小字里。
+
+<img src="docs/screenshots/04-project.webp" alt="自动生成的项目详情页" width="100%" />
 
 ---
 
-## 三、技术实现
+## 三、四套视觉模板
+
+切换即换皮，内容不用重填。
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/phase10-previews/template-resume.png" alt="Resume 模板" /><p align="center"><b>Resume</b> · 极简简历</p></td>
+    <td width="50%"><img src="docs/phase10-previews/template-developer.png" alt="Developer 模板" /><p align="center"><b>Developer</b> · 清爽开发者</p></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/phase10-previews/template-case.png" alt="Case 模板" /><p align="center"><b>Case</b> · 案例作品集</p></td>
+    <td width="50%"><img src="docs/phase10-previews/template-cinematic.png" alt="Cinematic 模板" /><p align="center"><b>Cinematic</b> · 电影感品牌</p></td>
+  </tr>
+</table>
+
+---
+
+## 四、技术实现
 
 **技术栈**
 
@@ -83,7 +95,7 @@ PageU 把这三件事压成一次填空：**你只负责讲事实，AI 负责提
 
 ---
 
-## 四、本地运行
+## 五、本地运行
 
 ```bash
 # 1. 安装依赖
@@ -103,7 +115,7 @@ npm run build    # 生产构建
 
 ---
 
-## 五、已知限制
+## 六、已知限制
 
 诚实记录，不算完美：
 
@@ -114,7 +126,7 @@ npm run build    # 生产构建
 
 ---
 
-## 六、作者
+## 七、作者
 
 **曹桎康** · 市场营销硕士在读，本科软件工程
 求职方向：AI 产品经理 / AI 行业
