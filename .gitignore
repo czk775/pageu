@@ -39,10 +39,11 @@ coverage
 tmp/
 temp/
 
-# Personal media (not for public repo)
+# Personal media and submission documents (kept locally, not published)
 /形象照.png
 /e2a96a48-*.png
-/曹桎康-创意-PageU-演示视频.mp4
+/*.mp4
+docs/competition/
 
 # Internal working docs (kept locally, not published)
 docs/HANDOFF.md
