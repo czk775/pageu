@@ -2,7 +2,7 @@
 
 > 填一段经历，AI 读懂它，生成一个可以直接发出去的求职个人网站。
 
-**[🌐 在线体验](https://pageu-ai-career.netlify.app)** · 无需注册，全程免费
+**[🌐 在线体验](https://pageu-ai-career.netlify.app)** · **[▶ 观看演示视频](https://github.com/czk775/pageu/releases/download/v0.1.0/pageu-demo.mp4)** · 无需注册，全程免费
 
 <br />
 
@@ -34,6 +34,8 @@ PageU 把这三件事压成一次填空：**你只负责讲事实，AI 负责提
 ---
 
 ## 二、产品流程
+
+> 一分钟看完整个流程：[▶ 演示视频](https://github.com/czk775/pageu/releases/download/v0.1.0/pageu-demo.mp4)
 
 ```
 输入经历  →  AI 分析  →  编辑预览  →  一键发布
